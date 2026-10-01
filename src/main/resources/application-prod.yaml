@@ -1,7 +1,7 @@
 server:
   port:5000
 
-loging:
+logging:
   level:
     root: INFO                       # 스프링과 라이브러리는 INFO 이상만 출력
     com.tenco.spring_blog: INFO
@@ -22,4 +22,4 @@ spring:
     # 실행되는 SQL을 콘솔에 출력합니다.
     show-sql: true
     # 추후 data.sql을 테이블 생성 후에 실행합니다.
-    defet-datasource-initialization: true
+    defer-datasource-initialization: true

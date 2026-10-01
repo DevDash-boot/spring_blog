@@ -1,7 +1,7 @@
 server:
   port:8080
 
-loging:
+logging:
   level:
     root: INFO                       # 스프링과 라이브러리는 INFO 이상만 출력
     com.tenco.spring_blog: DEBUG     # 우리 코드는 DEBUG 이상까지 출력
@@ -30,9 +30,10 @@ spring:
       hibernate:
         format_sql: true    # 출력되는 SQL을 콘솔창에 줄바꿈해 보기 좋게 표시
     # 추후 data.sql을 테이블 생성 후에 실행합니다.
-    defet-datasource-initialization: true
+    defer-datasource-initialization: true
 
-#  sql:
-#    init:
-#      data-locations:
-#        - classpath:db/data.sql
+  # 서버 시작 시 이 파일 실행
+  sql:
+    init:
+      data-locations:
+        - classpath:db/data.sql
