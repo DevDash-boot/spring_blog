@@ -1,3 +1,15 @@
+server:
+  port:5000
+
+loging:
+  level:
+    root: INFO                       # 스프링과 라이브러리는 INFO 이상만 출력
+    com.tenco.spring_blog: INFO
+
 spring:
-  profiles:
-    active: dev
+  # 데이터 베이스 연결(MySQL)
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306
+    username: sa
+    password:
