@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Controller
@@ -18,12 +17,12 @@ import java.util.Map;
 public class BoardController {
     // DI 처리
     private final BoardNativeRepository boardNativeRepository;
-
+    private final BoardPersistRepository boardPersistRepository;
     // 조회하기
     // GET - http://localhost:8080/ , http://localhost:8080/board/list
     @GetMapping({"/", "/board/list"})
     public String list(Model model) {
-        List<Board> boardList = boardNativeRepository.findAll();
+        List<Board> boardList = boardPersistRepository.findAll();
         model.addAttribute("boardList", boardList);
         return "board/list";
     }
@@ -32,12 +31,13 @@ public class BoardController {
     // GET - http://localhost:8080/board/3
     @GetMapping("/board/{id}")
     public String detail(@PathVariable(name = "id") Long id, Model model) {
-        Board board = boardNativeRepository.findById(id);
-        // 주소에서 없는 리스트의 번호를 넣으면 redirect가 실행된다.
-        if(board == null){
-            return "redirect:/";
-        }
-        model.addAttribute("board", board);
+       Board boardEntity = boardPersistRepository.findById(id);
+       //Board boardEntity = boardPersistRepository.findByIdwithJPQL(id);
+       if(boardEntity == null){
+           // 추후 404 에러 페이지를 만들어서 처리할 예정
+           throw new RuntimeException("게시글을 찾을 수 없습니다. " + id);
+       }
+       model.addAttribute("board", boardEntity);
         return "board/detail";
     }
 
@@ -48,24 +48,19 @@ public class BoardController {
     }
 
     // 게시글 작성하기
-    // POST - http://localhost:8080/board/save (글쓰기)
-    // 스프링 부트의 데이터 기본 파싱 전략 key=value
-    // name 속성 기준으로 값을 추출할 수 있다.
+    // POST - http://localhost:8080/board/save
+    // Spring이 폼 데이터를 객체로 변환하는 과정(데이터 바인딩 메커니즘)
+    // 폼 데이터 바인딩 : Spring이 HTTP 요청 파라미터를 객체로 자동 변환
     @PostMapping("/board/save")
-    public String save(@RequestParam("username") String username,
-                       @RequestParam("title") String title,
-                       @RequestParam("content") String content) {
-        // 폼의 name 속성과 매개변수 명이 일치하면 자동으로 값이 바인딩 됨
-        // name="title" --> String title로 자동 매핑
-        log.info("username : {}", username);
-        log.info("title : {}", title);
-        log.info("content : {}", content);
+    public String save(BoardRequest.saveDto reqDto) {
+        // DTO에서 Entity 클래스 타입으로 변환해줘야 함 - 비영속 상태
+        Board board = Board.builder()
+                .title(reqDto.getTitle())
+                .title(reqDto.getContent())
+                .title(reqDto.getUsername())
+                .build();
+        Board boardEntity = boardPersistRepository.save(board); // 영속 상태
 
-        // DAO 객체에게 데이터를 전달 후 저장하는 일 위임
-        boardNativeRepository.save(username, title, content);
-
-        // 저장 후 메인 페이지로 이동
-        // POST 요청 후 redirect로 PRG(Post-Redirect-Get) 패턴 구현
         return "redirect:/";
     }
 
@@ -75,7 +70,7 @@ public class BoardController {
     @GetMapping("/board/{id}/update")
     public String updateForm(@PathVariable Long id, Model model) {
         // 수정하기 화면 요청 (조회 기능)
-        Board board = boardNativeRepository.findById(id);
+        Board board = boardPersistRepository.findById(id);
         model.addAttribute("board", board);
 
         return "board/update-form";
@@ -84,11 +79,10 @@ public class BoardController {
     // 게시글 수정 기능 요청
     // POST - http://localhost:8080/board/1/update
     @PostMapping("/board/{id}/update")
-    public String update(@PathVariable Long id,
-                         @RequestParam(name = "title") String title,
-                         @RequestParam(name = "content") String content) {
-        boardNativeRepository.updateById(title, content, id);
-        // PRG 패턴
+    public String update(@PathVariable Long id, BoardRequest.updateDto reqDto) {
+        reqDto.validate();  // 유효성 실패 시 throw
+        boardPersistRepository.updateById(id, reqDto);
+
         return "redirect:/board/" + id; // 리다이렉트 수정된 게시글 상세보기 화면으로 이동
     }
 
@@ -97,7 +91,7 @@ public class BoardController {
     // POST - http://localhost:8080/board/1/delete
     @PostMapping("/board/{id}/delete")
     public String delete(@PathVariable Long id){
-        boardNativeRepository.deleteById(id);
+        boardPersistRepository.deleteById(id);
          // PRG 패턴 사용
         return "redirect:/";
     }
