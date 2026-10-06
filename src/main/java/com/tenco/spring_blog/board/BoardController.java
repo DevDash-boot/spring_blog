@@ -15,6 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor // DI 처리
 public class BoardController {
     // DI 처리
+    //private final BoardNativeRepository boardNativeRepository;
     private final BoardPersistRepository boardPersistRepository;
 
     // 조회하기
