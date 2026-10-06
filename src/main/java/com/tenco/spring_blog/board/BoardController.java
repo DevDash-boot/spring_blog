@@ -7,7 +7,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -16,8 +15,8 @@ import java.util.List;
 @RequiredArgsConstructor // DI 처리
 public class BoardController {
     // DI 처리
-    private final BoardNativeRepository boardNativeRepository;
     private final BoardPersistRepository boardPersistRepository;
+
     // 조회하기
     // GET - http://localhost:8080/ , http://localhost:8080/board/list
     @GetMapping({"/", "/board/list"})
@@ -47,6 +46,7 @@ public class BoardController {
         return "board/save-form";
     }
 
+    // TODO - 수정 예정
     // 게시글 작성하기
     // POST - http://localhost:8080/board/save
     // Spring이 폼 데이터를 객체로 변환하는 과정(데이터 바인딩 메커니즘)
@@ -54,12 +54,12 @@ public class BoardController {
     @PostMapping("/board/save")
     public String save(BoardRequest.saveDto reqDto) {
         // DTO에서 Entity 클래스 타입으로 변환해줘야 함 - 비영속 상태
-        Board board = Board.builder()
-                .title(reqDto.getTitle())
-                .title(reqDto.getContent())
-                .title(reqDto.getUsername())
-                .build();
-        Board boardEntity = boardPersistRepository.save(board); // 영속 상태
+//        Board board = Board.builder()
+//                .title(reqDto.getTitle())
+//                .content(reqDto.getContent())
+//                .user(reqDto.getUser())
+//                .build();
+//        Board boardEntity = boardPersistRepository.save(board); // 영속 상태
 
         return "redirect:/";
     }

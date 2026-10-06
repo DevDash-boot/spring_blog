@@ -1,0 +1,41 @@
+server:
+  port:8080
+
+logging:
+  level:
+    root: INFO                       # 스프링과 라이브러리는 INFO 이상만 출력
+    com.tenco.spring_blog: DEBUG     # 우리 코드는 DEBUG 이상까지 출력
+
+spring:
+  # 데이터 베이스 연결(H2 메모리 DB 사용)
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  # H2 콘솔 화면 켜기(http://localhost:8080/h2-console)
+  h2:
+    console:
+      enable: true
+
+  #JPA 설정
+  jpa:
+    hibernate:
+      # 운영에서는 create를 사용하지 않는다. 없는 테이블과 컬럼만 추가한다.
+      ddl-auto: create
+    # 실행되는 SQL을 콘솔에 출력합니다.
+    show-sql: true
+    properties:
+      hibernate:
+        default_batch_fetch_size: 10  # 한 번에 최대 10개까지만 들고올 수 있다.
+        format_sql: true    # 출력되는 SQL을 콘솔창에 줄바꿈해 보기 좋게 표시
+    # 추후 data.sql을 테이블 생성 후에 실행합니다.
+    defer-datasource-initialization: true
+
+  # 서버 시작 시 이 파일 실행
+  sql:
+    init:
+      mode: always  # always: DB 종류와 관계없이 항상 초기화. 기본값은 embedded이 있고, 추가로 never가 있음
+      data-locations:
+        - classpath:db/data.sql

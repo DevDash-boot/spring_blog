@@ -1,3 +1,5 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]  # 스프링은 .env를 자동으로 읽지 않아 읽을 수 있도록 설정 추가
   profiles:
-    active: dev
+    active: local

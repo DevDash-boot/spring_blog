@@ -6,7 +6,7 @@
         <div class="card-body">
             <form action="/board/{{board.id}}/update" method="post">
                 <div class="mb-3">
-                    <input type="text" class="form-control" value="{{board.username}}" readonly>
+                    <input type="text" class="form-control" value="{{board.user.username}}" readonly>
                 </div>
                 <div class="mb-3">
                     <input type="text" class="form-control" name="title" value="{{board.title}}">
