@@ -1,17 +1,16 @@
 package com.tenco.spring_blog.user;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
 
-@Getter
 @NoArgsConstructor  // 필수(JPA 엔티티 생성시)
 @Table(name = "user_tb")
 @Entity
+@Data
+@AllArgsConstructor
 public class User {
     @Id // 기본키 PK
     @GeneratedValue(strategy = GenerationType.IDENTITY) // AUTO_INCREMENT
