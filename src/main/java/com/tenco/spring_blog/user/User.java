@@ -37,4 +37,8 @@ public class User {
         this.password = password;
         this.email = email;
     }
+
+    public void update(String password){
+        this.password = password;
+    }
 }

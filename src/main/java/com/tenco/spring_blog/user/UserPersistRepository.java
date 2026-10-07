@@ -40,7 +40,7 @@ public class UserPersistRepository {
     }
 
     // 회원 정보 조회 - 로그인 (사용자 이름, 비밀번호 확인)
-    public User findByUsernameAndPassword(String username, String password){
+    public User findByUsernameAndPassword(String username, String password) {
         try {
             String jpql = """
                     SELECT u FROM User u WHERE u.username = :username AND u.password = :password
@@ -54,5 +54,26 @@ public class UserPersistRepository {
             // 로그인 실패를 의미
             return null;
         }
+    }
+
+    // 회원 정보 조회 - 수정 폼 용
+    public User findById(Long id) {
+        User user = em.find(User.class, id);
+        if (user == null) {
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        }
+        return user;
+    }
+
+    @Transactional
+    public User updateById(Long id, UserRequest.updateDto updateDto) {
+        User userEntity = em.find(User.class, id);
+
+        if (userEntity == null) {
+            throw new IllegalArgumentException("수정할 사용자를 찾을 수 없습니다.");
+        }
+
+        userEntity.update(updateDto.getPassword());
+        return userEntity;
     }
 }
