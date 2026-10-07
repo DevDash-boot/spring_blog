@@ -19,7 +19,7 @@ public class BoardPersistRepository {
     private final EntityManager em;
 
     @Transactional
-    public void updateById(Long id, BoardRequest.updateDto reqDto) {
+    public void updateById(Long id, BoardRequest.updateDto updateDto) {
         // 1. 수정할 엔티티를 먼저 조회 후 영속 상태로 만듬
         Board boardEntity = em.find(Board.class, id);
 
@@ -29,13 +29,13 @@ public class BoardPersistRepository {
         }
 
         // 3. 엔티티 객체 상태 변경 중
-        // boardEntity.setTitle(reqDto.getTitle());
-        // boardEntity.setContent(reqDto.getContent());
+        // boardEntity.setTitle(updateDto.getTitle());
+        // boardEntity.setContent(updateDto.getContent());
 
         // 4. 1차 캐시에 저장된 엔티티 객체의 내부 상태값이 변경되고 트랜잭션이 종료되면 더티 채킹(Dirty Checking)이 발생
         // 더티 채킹 : 현재와 DB가 다른 경우 업데이트를 자동으로 해줌
 
-        boardEntity.update(reqDto);
+        boardEntity.update(updateDto);
     }
 
 
