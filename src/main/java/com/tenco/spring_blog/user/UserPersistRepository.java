@@ -1,5 +1,6 @@
 package com.tenco.spring_blog.user;
 
+import com.tenco.spring_blog._core.error.Exception400;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
@@ -60,7 +61,7 @@ public class UserPersistRepository {
     public User findById(Long id) {
         User user = em.find(User.class, id);
         if (user == null) {
-            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+            throw new Exception400("사용자를 찾을 수 없습니다.");
         }
         return user;
     }
@@ -70,7 +71,7 @@ public class UserPersistRepository {
         User userEntity = em.find(User.class, id);
 
         if (userEntity == null) {
-            throw new IllegalArgumentException("수정할 사용자를 찾을 수 없습니다.");
+            throw new Exception400("수정할 사용자를 찾을 수 없습니다.");
         }
 
         userEntity.update(updateDto.getPassword());
