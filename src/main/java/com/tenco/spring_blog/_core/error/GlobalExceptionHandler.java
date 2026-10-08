@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 // 모든 컨트롤러에서 발생하는 예외를 이 클래스에서 처리
 @Slf4j
@@ -20,21 +21,20 @@ public class GlobalExceptionHandler {
         log.warn("에러 메세지 : {} ", e.getMessage());
         log.warn("예외 클래스 : {} ", e.getClass().getSimpleName());
 
-        model.addAttribute("msg", e.getMessage());
+        model.addAttribute("errorMessage", e.getMessage());
 
         return "err/400";
     }
 
     @ExceptionHandler(Exception401.class) // 특정 예외 타입이 발생했을 때 실행될 메서드로 지정
-    public String ex401(Exception401 e, HttpServletRequest request, Model model){
+    public String ex401(Exception401 e, HttpServletRequest request, RedirectAttributes rttr){
         log.warn("=== 401 Unauthorized 에러 발생 ===");
         log.warn("요청 URL : {} ", request.getRequestURL());
         log.warn("인증 오류 : {} ", e.getMessage());
         log.warn("예외 클래스 : {} ", e.getClass().getSimpleName());
 
-        model.addAttribute("msg", e.getMessage());
-
-        return "err/401";
+        rttr.addFlashAttribute("errorMessage", e.getMessage());
+        return "redirect:/login";
     }
 
 //    @ExceptionHandler(Exception403.class) // 특정 예외 타입이 발생했을 때 실행될 메서드로 지정
@@ -76,7 +76,7 @@ public class GlobalExceptionHandler {
         log.info("에러 메세지 : {} ", e.getMessage());
         log.info("예외 클래스 : {} ", e.getClass().getSimpleName());
 
-        model.addAttribute("msg", e.getMessage());
+        model.addAttribute("errorMessage", e.getMessage());
 
         return "err/404";
     }
@@ -88,7 +88,7 @@ public class GlobalExceptionHandler {
         log.error("서버 오류 : {} ", e.getMessage());
         log.error("스택 트레이스 : ", e); // 전체 스택 트레이스 포함
 
-        model.addAttribute("msg", "네트워크 일시 장애");
+        model.addAttribute("errorMessage", "네트워크 일시 장애");
 
         return "err/500";
     }
@@ -102,7 +102,7 @@ public class GlobalExceptionHandler {
         log.error("에러 메세지 : {} ", e.getMessage());
         log.error("스택 트레이스 : ", e); // 전체 스택 트레이스 포함
 
-        model.addAttribute("msg", "시스템 오류 발생. 관리자에게 문의해주세요.");
+        model.addAttribute("errorMessage", "시스템 오류 발생. 관리자에게 문의해주세요.");
 
         return "err/500";
     }

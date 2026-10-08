@@ -33,10 +33,10 @@ public class BoardController {
 
     // 상세보기
     // GET - http://localhost:8080/board/3
+    // excludePathPatterns로 제외되어 로그인 없이 접근 가능
     @GetMapping("/board/{id}")
     public String detail(@PathVariable(name = "id") Long id, Model model) {
         Board boardEntity = boardPersistRepository.findById(id);
-        //Board boardEntity = boardPersistRepository.findByIdwithJPQL(id);
         if (boardEntity == null) {
             throw new Exception404("게시글을 찾을 수 없습니다. " + id);
         }
@@ -47,11 +47,7 @@ public class BoardController {
     // GET - http://localhost:8080/board/save (화면 요청)
     @GetMapping("/board/save")
     public String saveForm(HttpSession session) {
-        // 인증 검사 - 로그인 안된 사용자는 이 페이지에 접근 못하게 처리
-        User sessionUser = (User) session.getAttribute(Define.SESSION_USER);
-        if (sessionUser == null) {
-            return "redirect:/login";
-        }
+        // 인터셉터에서 인증검사 진행됨
         return "board/save-form";
     }
 
@@ -63,9 +59,6 @@ public class BoardController {
     public String save(BoardRequest.saveDto saveDto, HttpSession session) {
         // 1. 인증 검사
         User sessionUser = (User) session.getAttribute(Define.SESSION_USER);
-        if (sessionUser == null) {
-            return "redirect:/login";
-        }
 
         // 2. 유효성 검사
         // 입력 데이터 검증
@@ -86,9 +79,7 @@ public class BoardController {
     public String updateForm(@PathVariable Long id, Model model, HttpSession session) {
         // 1. 인증 검사(로그인 여부 확인)
         User sessionUser = (User) session.getAttribute(Define.SESSION_USER);
-        if (sessionUser == null) {
-            return "redirect:/login";
-        }
+
         // 2. 권한 체크를 위한 게시글 조회
         Board board = boardPersistRepository.findById(id);
 
@@ -108,9 +99,7 @@ public class BoardController {
         // 여기에서도 하는 이유 : 시간이 지나 로그인이 풀릴 경우를 대비, 다른 경로로 접근했을 때를 대비
         // 1. 인증 검사
         User sessionUser = (User) session.getAttribute(Define.SESSION_USER);
-        if (sessionUser == null) {
-            return "redirect:/login";
-        }
+
         // 2 권한 검사
         Board boardEntity = boardPersistRepository.findById(id);
 
@@ -136,9 +125,6 @@ public class BoardController {
     public String delete(@PathVariable Long id, HttpSession session) {
         // 1. 인증 검사(로그인 여부 확인)
         User sessionUser = (User) session.getAttribute(Define.SESSION_USER);
-        if (sessionUser == null) {
-            return "redirect:/login";
-        }
 
         // 2. 권한 확인(로그인 했지만 내가 작성한 글인지 여부 확인)
         // (1) 삭제할 게시글 조회(권한 체크)
