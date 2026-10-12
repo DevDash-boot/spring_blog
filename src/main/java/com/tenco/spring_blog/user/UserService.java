@@ -59,7 +59,7 @@ public class UserService {
         User user = userJpaRepository.findByUsernameAndPassword(loginDto.getUsername(), loginDto.getPassword())
                 .orElseThrow(() -> {
                     log.warn("로그인 실패 - 사용자명 : {}, 원인 : 인증정보 불일치", loginDto.getPassword());
-                    return new Exception400("사용자명 또는 비밀번호가 올바르지 않습ㄴ다.");
+                    return new Exception400("사용자명 또는 비밀번호가 올바르지 않습니다.");
                 });
         log.info("로그인 성공 : {}", loginDto.getUsername());
         return user;
