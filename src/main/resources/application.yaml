@@ -3,7 +3,7 @@ spring:
     import: optional:file:.env[.properties]  # 스프링은 .env를 자동으로 읽지 않아 읽을 수 있도록 설정 추가
   mustache:
     servlet:
-      expose-session-attributes: true  # 머스태치 세션 정보에 접근
+      expose-session-attributes: false  # 머스태치 세션에 담을 값을 바로 사용 가능. 기본값 : false
   profiles:
     active: local
 
