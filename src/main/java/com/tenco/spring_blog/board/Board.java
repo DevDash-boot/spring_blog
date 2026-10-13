@@ -1,5 +1,6 @@
 package com.tenco.spring_blog.board;
 
+import com.tenco.spring_blog.user.SessionUserDto;
 import com.tenco.spring_blog.user.User;
 import com.tenco.spring_blog._core.util.MyDateUtil;
 import jakarta.persistence.*;

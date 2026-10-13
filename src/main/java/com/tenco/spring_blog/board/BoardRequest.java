@@ -1,6 +1,7 @@
 package com.tenco.spring_blog.board;
 
 import com.tenco.spring_blog._core.error.Exception400;
+import com.tenco.spring_blog.user.SessionUserDto;
 import com.tenco.spring_blog.user.User;
 import lombok.Data;
 
