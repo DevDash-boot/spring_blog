@@ -13,7 +13,7 @@ import lombok.Data;
 public class BoardResponse {
     // 게시글 상세 응답 DTO
     @Data
-    public static class DetailDto{
+    public static class DetailDto {
         private Long id;    // board 게시글 id
         private String title;
         private String content;
@@ -21,12 +21,12 @@ public class BoardResponse {
         private String username;
         private String createdAt;
 
-        public DetailDto(Board board){
+        public DetailDto(Board board) {
             this.id = board.getId();
             this.title = board.getTitle();
             this.content = board.getContent();
             // 지연 로딩 오류 방지를 위한 방어적 코드
-            if(board.getUser() != null){
+            if (board.getUser() != null) {
                 this.userId = board.getUser().getId();
                 this.username = board.getUser().getUsername();
             }
@@ -37,31 +37,31 @@ public class BoardResponse {
     }
 
     @Data
-    public static class ListDto{
+    public static class ListDto {
         private Long id;    // board 게시글 id
         private String title;
         private String username;
         private String createdAt;
 
-        public ListDto(Board board){
+        public ListDto(Board board) {
             this.id = board.getId();
             this.title = board.getTitle();
             // JOIN FETCH로 이미 가져온 user를 사용할 예정
-            if(board.getUser() != null){
+            if (board.getUser() != null) {
                 this.username = board.getUser().getUsername();
             }
-                this.createdAt = board.getTime();
+            this.createdAt = board.getTime();
         }
     }
 
     // 게시글 수정 화면 응답 DTO
     @Data
-    public static class updateFormDto{
+    public static class updateFormDto {
         private Long id;
         private String title;
         private String content;
 
-        public updateFormDto(Board board){
+        public updateFormDto(Board board) {
             this.id = board.getId();
             this.title = board.getTitle();
             this.content = board.getContent();

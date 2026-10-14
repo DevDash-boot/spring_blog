@@ -7,8 +7,4 @@ public class Exception403 extends RuntimeException{
     public Exception403(String msg) {
         super(msg); // 부모 클래스의 메시지 설정
     }
-
-    public static void main(String[] args) {
-        throw new Exception403("필수 입력 항목이 누락되었습니다.");
-    }
 }

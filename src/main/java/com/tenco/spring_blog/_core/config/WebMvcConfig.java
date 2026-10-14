@@ -1,7 +1,7 @@
 package com.tenco.spring_blog._core.config;
 
 import com.tenco.spring_blog._core.interceptor.IpBlockInterceptor;
-import com.tenco.spring_blog._core.interceptor.LoginIntercepter;
+import com.tenco.spring_blog._core.interceptor.LoginInterceptor;
 import com.tenco.spring_blog._core.interceptor.SessionUserModelInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +12,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    private final LoginIntercepter loginIntercepter;  // 연관관계
+    private final LoginInterceptor loginInterceptor;  // 연관관계
     private final IpBlockInterceptor ipBlockInterceptor;
     private final SessionUserModelInterceptor sessionUserModelInterceptor;
 
@@ -23,9 +23,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         .addPathPatterns("/**");    // 모든 경로
 
         // LoginIntercepter를 시스템에 등록
-        registry.addInterceptor(loginIntercepter)
+        registry.addInterceptor(loginInterceptor)
                 // 인터셉터가 동작할 URL 패턴을 지정
-                .addPathPatterns("/user/**", "/board/**")
+                .addPathPatterns("/user/**", "/board/**", "/reply/**")
                 // 인터셉터에서 제외할 URL 패턴을 지정
                 // \\d+는 정규 표현식으로 1개 이상의 숫자를 의미
                 // 예 : /board/1, /board/123 등 상세보기는 로그인 없어도 접근 가능
