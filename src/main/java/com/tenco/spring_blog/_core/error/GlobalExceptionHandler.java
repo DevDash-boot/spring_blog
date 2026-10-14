@@ -4,6 +4,7 @@ import com.tenco.spring_blog._core.util.Define;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -115,6 +116,21 @@ public class GlobalExceptionHandler {
 
         addSessionUserDto(request, model);
         model.addAttribute("errorMessage", "네트워크 일시 장애");
+
+        return "err/500";
+    }
+
+    // 데이터베이스 제약 조건 위반(외래키, unique 중복)
+    @ResponseStatus(HttpStatus.CONFLICT)    // 409 : 현재 데이터 상태와 충돌하는 지
+    @ExceptionHandler(DataIntegrityViolationException.class) // 특정 예외 타입이 발생했을 때 실행될 메서드로 지정
+    public String exDataIntegrityViolationException(DataIntegrityViolationException e, HttpServletRequest request, Model model){
+        log.error("=== 데이터베이스 제약조건 위반 ===");
+        log.error("요청 URL : {} ", request.getRequestURL());
+        log.error("원인 : {}", e.getMostSpecificCause().getMessage());  // 상세 원인(SQL, 제약조건 이름)은 개발자용 로그에만 남김
+
+
+        addSessionUserDto(request, model);
+        model.addAttribute("errorMessage", "시스템 오류 발생. 관리자에게 문의해주세요.");
 
         return "err/500";
     }

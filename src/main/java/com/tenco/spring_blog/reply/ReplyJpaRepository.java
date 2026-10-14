@@ -17,5 +17,5 @@ public interface ReplyJpaRepository extends JpaRepository<Reply, Long> {
     // ★ 주의 ★ @Query는 기본적으로 조회(SELECT)로 실행이 된다. 그래서 DELETE, UPDATE를 직접 쓸 때는 @Modifying을 사용
     @Modifying  // delete, update 시 반드시 선언
     @Query("delete from Reply r where r.board.id = :boardId")
-    void deleteBoardId(@Param("boardID") Long boardId);
+    void deleteByBoardId(@Param("boardId") Long boardId);
 }
