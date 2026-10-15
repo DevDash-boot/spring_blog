@@ -48,14 +48,12 @@ public class ReplyService {
 
     // 댓글 한 개 삭제
     @Transactional
-    public Long deleteById(Long replyId, SessionUserDto sessionUserDto) {
+    public void deleteById(Long replyId, SessionUserDto sessionUserDto) {
         Reply reply = replyJpaRepository.findById(replyId)
                 .orElseThrow(() -> new Exception404("댓글을 찾을 수 없습니다."));
         if (!reply.isOwner(sessionUserDto.getId())) {
             throw new Exception403("본인이 작성한 댓글만 삭제할 수 있습니다.");
         }
-        Long boardId = reply.getBoard().getId();
         replyJpaRepository.delete(reply);
-        return boardId;
     }
 }
