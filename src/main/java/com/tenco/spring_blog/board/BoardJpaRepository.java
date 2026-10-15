@@ -28,7 +28,8 @@ public interface BoardJpaRepository extends JpaRepository<Board, Long> {
 
     // 게시글 ID로 조회하면서 작성자 정보도 한 번에 가져오기
     // JOIN FETCH를 사용하며 N + 1 문제 해결
-    @Query("select b from Board b join fetch b.user u where b.id = :id")    // native query 도 쓸 수 있음
+    @Query("select b from Board b join fetch b.user u where b.id = :id")
+    // native query 도 쓸 수 있음
     Optional<Board> findByIdJoinUser(@Param("id") Long id);
     // N + 1 문제 : 지연 로딩(lazy 로딩)에서 Board 조회 후 User를 따로 조회하면 쿼리가 여러 번 실행됨.
     // JOIN FETCH는 이를 한 번의 쿼리로 해결
@@ -36,7 +37,18 @@ public interface BoardJpaRepository extends JpaRepository<Board, Long> {
     // 페이징 처리
     // 정렬은 Pageable에 담아서 전달하므로 쿼리에 ORDER BY를 사용하면 안된다.
     @Query(value = "select b from Board b join fetch b.user u",
-            countQuery = "select count(b) from Board b")    // countQuery를 사용해 전체 게시글 수 파악
+            countQuery = "select count(b) from Board b")
+    // countQuery를 사용해 전체 게시글 수 파악
     Page<Board> findAllJoinUser(Pageable pageable);
 
+    // 게시글 검색 + 페이징 조회
+    @Query(value = """
+            select b from Board b join fetch b.user u
+            where b.title like concat ('%', :keyword ,'%')
+            or b.content like concat ('%', :keyword ,'%')""",
+            countQuery = """
+            select count(b) from Board b
+            where b.title like concat ('%', :keyword ,'%')
+            or b.content like concat ('%', :keyword ,'%')""")
+    Page<Board> findAllKeywordJoinUser(Pageable pageable, @Param ("keyword") String keyword);
 }

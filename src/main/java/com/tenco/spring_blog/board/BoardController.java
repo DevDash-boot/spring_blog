@@ -11,6 +11,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Slf4j
@@ -25,9 +27,14 @@ public class BoardController {
     // GET - http://localhost:8080/ , http://localhost:8080/board/list
     @GetMapping({"/", "/board/list"})
     public String list(@RequestParam(name = "page", defaultValue = "1") int page,
-                       @RequestParam(name = "size", defaultValue = "3") int size, Model model) {
-        BoardResponse.PageDto pageDto = boardService.findAllPage(page, size);
+                       @RequestParam(name = "size", defaultValue = "3") int size,
+                       @RequestParam(name = "keyword", defaultValue = "") String keyword, Model model) {
+        BoardResponse.PageDto pageDto = boardService.findAllPage(page, size, keyword);
         model.addAttribute("boardPage", pageDto);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("isSearch", !keyword.isBlank());
+        // 페이지 링크는 직접 URL 인코딩이 필요하다.
+        model.addAttribute("keywordParam", URLEncoder.encode(keyword, StandardCharsets.UTF_8));
         return "board/list";
     }
 

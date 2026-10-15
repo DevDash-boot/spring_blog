@@ -69,18 +69,22 @@ public class BoardService {
     }
 
     // 게시글 목록 조회 페이징 처리
-    public BoardResponse.PageDto findAllPage(int page, int size) {
+    public BoardResponse.PageDto findAllPage(int page, int size, String keyword) {
         log.info("게시글 목록 조회 시작 ");
-
         // 1부터 시작하는 번호를 0부터로 변환
         int pageIndex = Math.max(0, page - 1);
         // 페이지 크기는 1 ~ 50 정도로 제한(size = 100000 같은 요청 방어)
         int validSize = Math.clamp(size, 1, 50);
-
         // 최신글이 먼저 오도록 id를 내림차순으로 정렬. 주문서 생성
         Pageable pageable = PageRequest.of(pageIndex, validSize, Sort.by(Sort.Direction.DESC, "id"));
-        // 페이징 처리가 된 게시글 목록 조회 요청
-        Page<Board> boardPage = boardJpaRepository.findAllJoinUser(pageable);
+        // isBlank() : null이 아닌 상태에서 공백 제거 후 개수 확인
+        Page<Board> boardPage;
+        if(keyword == null || keyword.isBlank()){
+            // 페이징 처리가 된 게시글 목록 조회 요청
+            boardPage = boardJpaRepository.findAllJoinUser(pageable);
+        } else {
+            boardPage = boardJpaRepository.findAllKeywordJoinUser(pageable, keyword);
+        }
         // 조회 후 트랜잭션 안에서 응답 DTO로 변환 처리
         return new BoardResponse.PageDto(boardPage);
     }
