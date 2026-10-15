@@ -74,7 +74,7 @@ public class BoardService {
         // 1부터 시작하는 번호를 0부터로 변환
         int pageIndex = Math.max(0, page - 1);
         // 페이지 크기는 1 ~ 50 정도로 제한(size = 100000 같은 요청 방어)
-        int validSize = Math.clamp(size, 1, 50);
+        int validSize = Math.max(1, Math.min(size, 50));
         // 최신글이 먼저 오도록 id를 내림차순으로 정렬. 주문서 생성
         Pageable pageable = PageRequest.of(pageIndex, validSize, Sort.by(Sort.Direction.DESC, "id"));
         // isBlank() : null이 아닌 상태에서 공백 제거 후 개수 확인
