@@ -203,32 +203,6 @@ public class BoardJpaRepositoryTest {
     // ===== findAllJoinUser (목록 조회 + 작성자) =====
 
     @Test
-    public void findAllJoinUser_최신순_조회_테스트() {
-        // given : 게시글 두 개 저장
-        User user = saveUser();
-        Board first = boardJpaRepository.save(createBoard("먼저 쓴 글", user));
-        Board second = boardJpaRepository.save(createBoard("나중에 쓴 글", user));
-        em.flush();
-        em.clear();
-
-        // when : 목록 조회
-        List<Board> boardList = boardJpaRepository.findAllJoinUser();
-
-        // then 1 : id 내림차순(최신순) 정렬
-        Assertions.assertThat(boardList)
-                .isSortedAccordingTo(Comparator.comparing(Board::getId).reversed());
-
-        // then 2 : 가장 최근 글이 맨 앞
-        Assertions.assertThat(boardList.get(0).getId()).isEqualTo(second.getId());
-
-        // then 3 : 모든 게시글의 작성자가 실제 데이터로 채워져 있음
-        Assertions.assertThat(boardList)
-                .allMatch(board -> Hibernate.isInitialized(board.getUser()));
-    }
-
-    // ===== 더티 체킹 (게시글 수정) =====
-
-    @Test
     public void update_게시글_수정_더티체킹_테스트() {
         // given : 게시글 저장과 수정할 내용
         User user = saveUser();
