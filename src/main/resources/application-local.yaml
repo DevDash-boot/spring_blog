@@ -7,17 +7,11 @@ logging:
     com.tenco.spring_blog: DEBUG     # 우리 코드는 DEBUG 이상까지 출력
 
 spring:
-  # 데이터 베이스 연결(H2 메모리 DB 사용)
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
-
-  # H2 콘솔 화면 켜기(http://localhost:8080/h2-console)
-  h2:
-    console:
-      enable: true
 
   #JPA 설정
   jpa:

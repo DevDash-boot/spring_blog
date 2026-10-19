@@ -17,7 +17,7 @@ spring:
   # H2 콘솔 화면 켜기(http://localhost:8080/h2-console)
   h2:
     console:
-      enable: true
+      enabled: true
 
   #JPA 설정
   jpa:
