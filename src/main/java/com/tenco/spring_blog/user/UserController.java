@@ -34,15 +34,6 @@ public class UserController {
     @Value("${oauth.kakao.redirect-uri}")
     private String kakaoRedirectUri;
 
-    // 테스트용
-    // 서버가 시작될 때 한 번 실행되어 콘솔에 값이 찍힌다.
-    @PostConstruct
-    public void init() {
-        log.info("카카오 REST API 키 확인 : {}", kakaoClientId);
-        log.info("카카오 시크릿 키 확인 : {}", kakaoClientSecret);
-        log.info("카카오 리다이렉트 URI 확인 : {}", kakaoRedirectUri);
-    }
-
     @GetMapping("/kakao-login")
     public String kakaoLogin() {
         String url = "https://kauth.kakao.com/oauth/authorize"

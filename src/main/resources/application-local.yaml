@@ -12,7 +12,6 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
-
   #JPA 설정
   jpa:
     # 기본값 : true - 뷰 렌더링까지 영속성 컨텍스트 유지. 지연 로딩 가능

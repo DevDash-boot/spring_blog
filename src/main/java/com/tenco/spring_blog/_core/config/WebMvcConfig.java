@@ -3,7 +3,10 @@ package com.tenco.spring_blog._core.config;
 import com.tenco.spring_blog._core.interceptor.*;
 import com.tenco.spring_blog._core.util.FileUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -50,5 +53,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 // /board/1/update 처럼 뒤에 경로가 있으면 제외 대상이 아니게 된다.
                 .excludePathPatterns("/board/list", "/board/{id:\\d+}");
         registry.addInterceptor(adminInterceptor).addPathPatterns("/admin/**"); // 관리자 검사
+    }
+
+    // 비밀번호 해싱 도구를 빈으로 등록 (필요한 곳에서 DI 가능)
+    @Bean   // IoC 처리됨
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
     }
 }

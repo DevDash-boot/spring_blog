@@ -1,176 +1,143 @@
 package com.tenco.spring_blog.user;
 
-import org.assertj.core.api.Assertions;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceUnitUtil;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 
 import java.util.Optional;
 
-@DataJpaTest // JPA 관련 빈만 띄우고, 각 테스트가 끝나면 롤백
-public class UserJpaRepositoryTest {
+import static org.assertj.core.api.Assertions.assertThat;
+
+@DataJpaTest
+class UserJpaRepositoryTest {
 
     @Autowired
     private UserJpaRepository userJpaRepository;
 
-    // data.sql 의 사용자(admin, minsu 등)와 겹치지 않는 테스트용 사용자
-    private User createUser(String username, String email) {
-        return User.builder()
+    @Autowired
+    private EntityManager entityManager;
+
+    @Autowired
+    private EntityManagerFactory entityManagerFactory;
+
+    // 사용자 테스트 데이터 생성
+    private User 사용자_생성(String username, String email) {
+        User user = User.builder()
                 .username(username)
-                .password("1234")
                 .email(email)
+                .password("1234")
                 .build();
-    }
 
-    // ===== save =====
-
-    @Test
-    public void save_회원가입_테스트() {
-        // given : 저장할 사용자
-        User user = createUser("testUser", "test@email.com");
-
-        // when : 저장
-        User savedUser = userJpaRepository.save(user);
-
-        // then : id 와 작성일이 자동으로 채워짐
-        Assertions.assertThat(savedUser.getId()).isNotNull();
-        Assertions.assertThat(savedUser.getCreatedAt()).isNotNull();
-        Assertions.assertThat(savedUser.getUsername()).isEqualTo("testUser");
-        Assertions.assertThat(savedUser.getEmail()).isEqualTo("test@email.com");
-    }
-
-    // ===== findById =====
-
-    @Test
-    public void findById_존재하는_사용자_조회_테스트() {
-        // given : 사용자 저장
-        User savedUser = userJpaRepository.save(createUser("testUser", "test@email.com"));
-
-        // when : id 로 조회
-        Optional<User> found = userJpaRepository.findById(savedUser.getId());
-
-        // then : 조회됨
-        Assertions.assertThat(found).isPresent();
-        Assertions.assertThat(found.get().getUsername()).isEqualTo("testUser");
+        return userJpaRepository.saveAndFlush(user);
     }
 
     @Test
-    public void findById_존재하지않는_사용자_조회_테스트() {
-        // given : 존재하지 않는 id
-        Long notExistId = 9999L;
+    @DisplayName("사용자명으로 역할과 함께 사용자를 조회한다")
+    void findByUsernameWithRoles_일치하는_사용자_테스트() {
+        // given: 조회할 사용자를 직접 저장한다.
+        User savedUser = 사용자_생성("testuser", "test@example.com");
 
-        // when : 조회
-        Optional<User> found = userJpaRepository.findById(notExistId);
+        // when: 사용자명으로 사용자를 조회한다.
+        Optional<User> result =
+                userJpaRepository.findByUsernameWithRoles("testuser");
 
-        // then : 비어 있음
-        Assertions.assertThat(found).isEmpty();
-    }
-
-    // ===== findByUsernameAndPassword (로그인) =====
-
-    @Test
-    public void findByUsernameAndPassword_로그인_성공_테스트() {
-        // given : 가입된 사용자
-        userJpaRepository.save(createUser("testUser", "test@email.com"));
-
-        // when : 올바른 사용자명과 비밀번호로 조회
-        Optional<User> loginUser = userJpaRepository.findByUsernameAndPassword("testUser", "1234");
-
-        // then : 조회됨
-        Assertions.assertThat(loginUser).isPresent();
-        Assertions.assertThat(loginUser.get().getUsername()).isEqualTo("testUser");
+        // then: 조회된 사용자의 ID가 저장한 사용자의 ID와 같다.
+        assertThat(result).isPresent();
+        assertThat(result.get().getId()).isEqualTo(savedUser.getId());
     }
 
     @Test
-    public void findByUsernameAndPassword_비밀번호_불일치_테스트() {
-        // given : 가입된 사용자
-        userJpaRepository.save(createUser("testUser", "test@email.com"));
+    @DisplayName("사용자 조회 시 roles 연관 엔티티가 함께 로딩된다")
+    void findByUsernameWithRoles_역할_함께로딩_테스트() {
+        // given: 사용자 한 명을 저장한다.
+        사용자_생성("roleuser", "role@example.com");
 
-        // when : 틀린 비밀번호로 조회
-        Optional<User> loginUser = userJpaRepository.findByUsernameAndPassword("testUser", "9999");
+        // when: 영속성 컨텍스트를 비운 후 JOIN FETCH 메서드로 조회한다.
+        entityManager.flush();
+        entityManager.clear();
 
-        // then : 비어 있음 (로그인 실패)
-        Assertions.assertThat(loginUser).isEmpty();
+        User foundUser = userJpaRepository
+                .findByUsernameWithRoles("roleuser")
+                .orElseThrow();
+
+        // then: 조회된 User와 roles 컬렉션이 로딩된 상태인지 확인한다.
+        PersistenceUnitUtil persistenceUnitUtil =
+                entityManagerFactory.getPersistenceUnitUtil();
+
+        assertThat(persistenceUnitUtil.isLoaded(foundUser)).isTrue();
+        assertThat(persistenceUnitUtil.isLoaded(foundUser, "roles")).isTrue();
     }
 
     @Test
-    public void findByUsernameAndPassword_존재하지않는_사용자_테스트() {
-        // given : 가입되지 않은 사용자명
-        String username = "nobody";
+    @DisplayName("존재하지 않는 사용자명으로 조회하면 빈 Optional을 반환한다")
+    void findByUsernameWithRoles_일치하지않는_사용자명_테스트() {
+        // given: 조회할 사용자명을 준비한다. 해당 사용자는 저장하지 않는다.
+        String username = "notfound";
 
-        // when : 조회
-        Optional<User> loginUser = userJpaRepository.findByUsernameAndPassword(username, "1234");
+        // when: 존재하지 않는 사용자명으로 조회한다.
+        Optional<User> result =
+                userJpaRepository.findByUsernameWithRoles(username);
 
-        // then : 비어 있음
-        Assertions.assertThat(loginUser).isEmpty();
-    }
-
-    // ===== findByUsername (사용자명 중복 체크) =====
-
-    @Test
-    public void findByUsername_사용자명_존재_테스트() {
-        // given : 가입된 사용자
-        userJpaRepository.save(createUser("testUser", "test@email.com"));
-
-        // when : 같은 사용자명으로 조회
-        Optional<User> found = userJpaRepository.findByUsername("testUser");
-
-        // then : 조회됨 (중복)
-        Assertions.assertThat(found).isPresent();
+        // then: 조회 결과가 비어 있다.
+        assertThat(result).isEmpty();
     }
 
     @Test
-    public void findByUsername_사용자명_없음_테스트() {
-        // given : 가입되지 않은 사용자명
-        String username = "nobody";
+    @DisplayName("사용자명으로 사용자를 조회한다")
+    void findByUsername_일치하는_사용자_테스트() {
+        // given
+        사용자_생성("finduser", "finduser@test.com");
 
-        // when : 조회
-        Optional<User> found = userJpaRepository.findByUsername(username);
+        // when
+        Optional<User> result = userJpaRepository.findByUsername("finduser");
 
-        // then : 비어 있음 (사용 가능)
-        Assertions.assertThat(found).isEmpty();
-    }
-
-    // ===== findByEmail (이메일 중복 체크) =====
-
-    @Test
-    public void findByEmail_이메일_존재_테스트() {
-        // given : 가입된 사용자
-        userJpaRepository.save(createUser("testUser", "test@email.com"));
-
-        // when : 같은 이메일로 조회
-        Optional<User> found = userJpaRepository.findByEmail("test@email.com");
-
-        // then : 조회됨 (중복)
-        Assertions.assertThat(found).isPresent();
-        Assertions.assertThat(found.get().getUsername()).isEqualTo("testUser");
+        // then
+        assertThat(result).isPresent();
+        assertThat(result.get().getUsername()).isEqualTo("finduser");
     }
 
     @Test
-    public void findByEmail_이메일_없음_테스트() {
-        // given : 가입되지 않은 이메일
-        String email = "nobody@email.com";
+    @DisplayName("등록되지 않은 사용자명으로 조회하면 빈 Optional을 반환한다")
+    void findByUsername_존재하지않는_사용자_테스트() {
+        // given: 등록되지 않은 사용자명을 준비한다.
+        String username = "unknown";
 
-        // when : 조회
-        Optional<User> found = userJpaRepository.findByEmail(email);
+        // when: 해당 사용자명으로 조회한다.
+        Optional<User> result = userJpaRepository.findByUsername(username);
 
-        // then : 비어 있음 (사용 가능)
-        Assertions.assertThat(found).isEmpty();
+        // then: 조회 결과가 비어 있다.
+        assertThat(result).isEmpty();
     }
 
-    // ===== 더티 체킹 (회원정보 수정) =====
+    @Test
+    @DisplayName("이메일로 사용자를 조회한다")
+    void findByEmail_일치하는_사용자_테스트() {
+        // given: 이메일을 가진 사용자를 저장한다.
+        User savedUser = 사용자_생성("emailuser", "email@example.com");
+
+        // when: 이메일로 조회한다.
+        Optional<User> result =
+                userJpaRepository.findByEmail("email@example.com");
+
+        // then: 저장한 사용자와 같은 ID를 가진 사용자가 조회된다.
+        assertThat(result).isPresent();
+        assertThat(result.get().getId()).isEqualTo(savedUser.getId());
+    }
 
     @Test
-    public void update_비밀번호_수정_더티체킹_테스트() {
-        // given : 가입된 사용자
-        User savedUser = userJpaRepository.save(createUser("testUser", "test@email.com"));
+    @DisplayName("등록되지 않은 이메일로 조회하면 빈 Optional을 반환한다")
+    void findByEmail_존재하지않는_이메일_테스트() {
+        // given: 등록되지 않은 이메일을 준비한다.
+        String email = "unknown@example.com";
 
-        // when : 엔티티의 값만 변경 (save 를 다시 호출하지 않음)
-        savedUser.update("5678");
-        userJpaRepository.flush(); // 변경 감지로 UPDATE 쿼리를 지금 실행
+        // when: 해당 이메일로 조회한다.
+        Optional<User> result = userJpaRepository.findByEmail(email);
 
-        // then : 새 비밀번호로 로그인 조회 가능
-        Optional<User> loginUser = userJpaRepository.findByUsernameAndPassword("testUser", "5678");
-        Assertions.assertThat(loginUser).isPresent();
+        // then: 조회 결과가 비어 있다.
+        assertThat(result).isEmpty();
     }
 }

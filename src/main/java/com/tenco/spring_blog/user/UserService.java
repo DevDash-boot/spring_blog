@@ -5,6 +5,7 @@ import com.tenco.spring_blog._core.error.Exception404;
 import com.tenco.spring_blog._core.util.FileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserService {
     private final UserJpaRepository userJpaRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /*
      * 회원가입 처리
@@ -49,10 +51,12 @@ public class UserService {
         // 프로필 이미지 저장(새롭게 생긴 파일 이름이 리턴)
         String profileImage = FileUtil.saveImage(joinDto.getProfileImage());
 
-        User user = joinDto.toEntity(profileImage);
-        user.addRole(Role.USER);    // Role 기본값 할당
+        // 비밀번호 해싱 처리
+        String encodePassword = passwordEncoder.encode(joinDto.getPassword());
 
         // 프로필 파일 이름과 회원 정보 저장
+        User user = joinDto.toEntity(profileImage, encodePassword);
+        user.addRole(Role.USER);    // Role 기본값 할당
         User savedUser = userJpaRepository.save(user);
         log.info("회원가입 서비스 처리 완료 - 사용자명 : {}, ID : {}", joinDto.getUsername(), savedUser.getId());
         return new UserResponse.JoinDto(savedUser);
@@ -65,11 +69,19 @@ public class UserService {
      */
     public SessionUserDto login(UserRequest.loginDto loginDto) {
         log.info("로그인 서비스 처리 시작 - 사용자명 : {}", loginDto.getUsername());
-        User user = userJpaRepository.findByUsernameAndPassword(loginDto.getUsername(), loginDto.getPassword())
+        // 사용자명으로만 조회(역할 포함)
+        User user = userJpaRepository.findByUsernameWithRoles(loginDto.getUsername())
                 .orElseThrow(() -> {
-                    log.warn("로그인 실패 - 사용자명 : {}, 원인 : 인증정보 불일치", loginDto.getPassword());
+                    log.warn("로그인 실패 - 사용자명 : {}, 원인 : 사용자명 불일치", loginDto.getUsername());
                     return new Exception400("사용자명 또는 비밀번호가 올바르지 않습니다.");
+
                 });
+        // 비밀번호 비교 : matches(입력한 평문, DB에 저장된 해시)
+        if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
+            log.warn("로그인 실패 - 비밀번호 : {}, 원인 : 비밀번호 불일치", loginDto.getPassword());
+            throw new Exception400("사용자명 또는 비밀번호가 올바르지 않습니다.");
+        }
+
         log.info("로그인 성공 : {}", loginDto.getUsername());
         return new SessionUserDto(user);
     }
@@ -85,9 +97,12 @@ public class UserService {
     @Transactional
     public SessionUserDto updateById(Long id, UserRequest.updateDto updateDto) {
         User user = findById(id);   // 정보 조회
+
         if (updateDto.hasPassword()) {
-            user.update(updateDto.getPassword());   // 비밀번호
+            // 비밀번호 해싱 처리
+            user.update(passwordEncoder.encode(updateDto.getPassword()));   // 비밀번호
         }
+
         if (updateDto.hasProfileImage()) {
             // 새 이미지를 골랐을 때만 교체 (null 또는 파일 데이터
             String newImage = FileUtil.saveImage(updateDto.getProfileImage());
@@ -142,7 +157,7 @@ public class UserService {
         User newUser = User.builder()
                 .username(username)
                 // 카카오 사용자는 비밀번호로 로그인하지 않으므로 아무도 알 수 없는 값을 넣음
-                .password(UUID.randomUUID().toString())
+                .password(passwordEncoder.encode(UUID.randomUUID().toString()))
                 .email(username + "@kakao.com")
                 .profileImage(kakaoUserInfo.getProperties().getProfileImage())
                 .provider(OAuthProvider.KAKAO)
