@@ -50,7 +50,7 @@ public class KakaoApiClient {
 
         // exchange(주소, method, HTTP 메세지, 응답 타입)
         ResponseEntity<UserResponse.OauthToken> response = restTemplate.exchange(
-                "https://kauth.kakao.com/oauth/token",
+                TOKEN_URL,
                 HttpMethod.POST,
                 tokenRequest,
                 UserResponse.OauthToken.class
