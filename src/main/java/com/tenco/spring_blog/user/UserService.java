@@ -2,7 +2,9 @@ package com.tenco.spring_blog.user;
 
 import com.tenco.spring_blog._core.error.Exception400;
 import com.tenco.spring_blog._core.error.Exception404;
+import com.tenco.spring_blog._core.util.Define;
 import com.tenco.spring_blog._core.util.FileUtil;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,8 +35,15 @@ public class UserService {
      * @return : 저장된 사용자 정보
      */
     @Transactional
-    public UserResponse.JoinDto join(UserRequest.joinDto joinDto) {
+    public UserResponse.JoinDto join(UserRequest.joinDto joinDto, String verifiedEmail) {
         log.info("회원가입 서비스 처리 시작 - 사용자명 : {}", joinDto.getUsername());
+
+        // 이메일 인증 여부 확인
+        // 인증하지 않았거나 인증한 이메일과 가입 폼의 이메일이 다르면 거부
+        if(verifiedEmail == null || !verifiedEmail.equals(joinDto.getEmail())){
+            throw new Exception400("이메일 인증을 먼저 완료해주세요.");
+        }
+
         // 중복 체크 : 이미 있으면 null이 아님
         userJpaRepository.findByUsername(joinDto.getUsername())
                 .ifPresent(user -> {
@@ -42,11 +51,7 @@ public class UserService {
                     throw new Exception400("이미 존재하는 사용자명입니다.");
                 });
         // 이메일 중복 검사
-        userJpaRepository.findByEmail(joinDto.getEmail())
-                .ifPresent(user -> {
-                    log.warn("회원 가입 실패 - 중복된 이메일 : {}", joinDto.getEmail());
-                    throw new Exception400("이미 존재하는 이메일입니다.");
-                });
+        checkEmailAvailable(joinDto.getEmail());
 
         // 프로필 이미지 저장(새롭게 생긴 파일 이름이 리턴)
         String profileImage = FileUtil.saveImage(joinDto.getProfileImage());
@@ -145,7 +150,7 @@ public class UserService {
                 .orElseGet(() -> joinKakaoUser(username, kakaoUserInfo));
 
         // 같은 이름의 일반 회원이 있다면 카카오 사용자로 로그인 시키지 않음
-        if(user.getProvider() != OAuthProvider.KAKAO){
+        if (user.getProvider() != OAuthProvider.KAKAO) {
             throw new Exception400("이미 사용중인 사용자명입니다.");
         }
 
@@ -164,5 +169,13 @@ public class UserService {
                 .build();
         newUser.addRole(Role.USER);
         return userJpaRepository.save(newUser);
+    }
+
+    // 이메일 사용 가능 여부(인증 번호 발송 전)
+    public void checkEmailAvailable(String email) {
+        userJpaRepository.findByEmail(email)
+                .ifPresent(user -> {
+                    throw new Exception400("이미 등록된 이메일입니다.");
+                });
     }
 }
