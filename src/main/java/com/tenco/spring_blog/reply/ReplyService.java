@@ -2,6 +2,7 @@ package com.tenco.spring_blog.reply;
 
 import com.tenco.spring_blog._core.error.Exception403;
 import com.tenco.spring_blog._core.error.Exception404;
+import com.tenco.spring_blog._core.error.UnauthorizedException;
 import com.tenco.spring_blog.board.Board;
 import com.tenco.spring_blog.board.BoardJpaRepository;
 import com.tenco.spring_blog.user.SessionUserDto;
@@ -32,12 +33,10 @@ public class ReplyService {
     // 댓글 작성
     @Transactional
     public void save(ReplyRequest.saveDto saveDto, SessionUserDto sessionUserDto){
+        if (sessionUserDto == null) throw new UnauthorizedException("로그인 먼저 해주세요.");
         // 게시글 먼저 조회(실제로 있는지 존재 확인)
         Board board = boardJpaRepository.findById(saveDto.getBoardId())
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다."));
-        if(sessionUserDto == null){
-            return;
-        }
         // 작성자 정보 조회
         User user = userJpaRepository.findById(sessionUserDto.getId())
                 .orElseThrow(() -> new Exception404("작성자 정보를 찾을 수 없습니다."));

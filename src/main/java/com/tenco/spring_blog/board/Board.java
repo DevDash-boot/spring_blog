@@ -1,18 +1,17 @@
 package com.tenco.spring_blog.board;
 
-import com.tenco.spring_blog.user.SessionUserDto;
-import com.tenco.spring_blog.user.User;
 import com.tenco.spring_blog._core.util.MyDateUtil;
+import com.tenco.spring_blog.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
 
-@Data
+@Getter
 // 엔티티 클래스 만들기 : 데이터베이스 클래스 한 개를 자바 클래스로 그린 설계도
 @Table(name = "board_tb")
 @Entity

@@ -7,15 +7,15 @@
             <div class="text-center mb-4">
                 <!-- 프로필 이미지가 있을 경우 -->
                 {{#user.profileImage}}
-                <img src="{{user.profileImage}}" alt="" class="rounded-circle boader"
-                     style="width: 200px; height: 200px; object-fit: cover">
+                    <img src="{{user.profileImage}}" alt="" class="rounded-circle boader"
+                         style="width: 200px; height: 200px; object-fit: cover">
                 {{/user.profileImage}}
                 <!-- 프로필 이미지가 없을 경우 -->
                 {{^user.profileImage}}
-                <div class="rounded-circle border bg-secondary d-inline-flex align-items-center justify-content-center"
-                     style="width: 200px; height: 200px;">
-                    <span class="text-white">프로필 이미지 없음</span>
-                </div>
+                    <div class="rounded-circle border bg-secondary d-inline-flex align-items-center justify-content-center"
+                         style="width: 200px; height: 200px;">
+                        <span class="text-white">프로필 이미지 없음</span>
+                    </div>
                 {{/user.profileImage}}
             </div>
             <div class="mb-3">
@@ -30,12 +30,25 @@
                 <label for="" class="form-label fw-bold">가입일</label>
                 <p class="form-control-plaintext">{{user.createdAt}}</p>
             </div>
-            <div class="mb-3 text-center" >
+            <div class="mb-3">
+                <label class="form-label fw-bold">휴대폰 인증 여부</label>
+                {{#user.certification}}
+                    <p class="form-control-plaintext text-success">
+                        <i class="fa-solid fa-circle-check"></i> 휴대폰 인증 완료
+                    </p>
+                {{/user.certification}}
+                {{^user.certification}}
+                    <p class="form-control-plaintext text-secondary">
+                        휴대폰 미인증
+                    </p>
+                {{/user.certification}}
+            </div>
+            <div class="mb-3 text-center">
                 <a href="/user/update" class="btn btn-primary">회원 정보 수정</a>
+                <a href="/user/sms" class="btn btn-outline-secondary">휴대폰 인증</a>
                 <a href="/" class="btn btn-secondary">목록으로</a>
             </div>
         </div>
     </div>
 </div>
-
 {{> layout/footer}}

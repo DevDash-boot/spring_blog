@@ -14,12 +14,14 @@ public class UserResponse {
         private String email;
         private String profileImage; // 파일 이름(없으면 null)
         private String createdAt;   // 포맷된 가입일
+        private boolean certification;
 
         public DetailDto(User user) {
             this.id = user.getId();
             this.username = user.getUsername();
             this.email = user.getEmail();
             this.profileImage = user.getProfilePath();
+            this.certification = user.isCertification();
             this.createdAt = MyDateUtil.timestampFormat(user.getCreatedAt());
         }
     }

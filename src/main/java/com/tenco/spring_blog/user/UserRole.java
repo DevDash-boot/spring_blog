@@ -2,7 +2,7 @@ package com.tenco.spring_blog.user;
 
 import jakarta.persistence.*;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "user_role_tb", uniqueConstraints = {
         @UniqueConstraint(name = "uk_user_role", columnNames = {"user_id", "role"})})
 @NoArgsConstructor
-@Data
+@Getter
 public class UserRole {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

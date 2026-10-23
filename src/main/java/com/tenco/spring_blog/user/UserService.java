@@ -2,9 +2,7 @@ package com.tenco.spring_blog.user;
 
 import com.tenco.spring_blog._core.error.Exception400;
 import com.tenco.spring_blog._core.error.Exception404;
-import com.tenco.spring_blog._core.util.Define;
 import com.tenco.spring_blog._core.util.FileUtil;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -83,7 +81,7 @@ public class UserService {
                 });
         // 비밀번호 비교 : matches(입력한 평문, DB에 저장된 해시)
         if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
-            log.warn("로그인 실패 - 비밀번호 : {}, 원인 : 비밀번호 불일치", loginDto.getPassword());
+            log.warn("로그인 실패 - 비밀번호 : {}, 원인 : 비밀번호 불일치", loginDto.getUsername());
             throw new Exception400("사용자명 또는 비밀번호가 올바르지 않습니다.");
         }
 
@@ -177,5 +175,12 @@ public class UserService {
                 .ifPresent(user -> {
                     throw new Exception400("이미 등록된 이메일입니다.");
                 });
+    }
+
+    @Transactional
+    public void certifyPhone(Long userId) {
+        User user = userJpaRepository.findById(userId)
+                .orElseThrow(() -> new Exception400("사용자를 찾을 수 없습니다."));
+        user.setCertification(true);
     }
 }

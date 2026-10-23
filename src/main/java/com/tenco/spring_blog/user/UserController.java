@@ -1,6 +1,8 @@
 package com.tenco.spring_blog.user;
 
 import com.tenco.spring_blog._core.util.Define;
+import com.tenco.spring_blog.sms.SmsRequest;
+import com.tenco.spring_blog.sms.SmsService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -105,6 +107,12 @@ public class UserController {
     public String deleteProfileImage(HttpSession session) {
         SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
         userService.deleteProfileImage(sessionUserDto.getId());
-        return "redirect:/user/profile";
+        return "redirect:/user/detail";
+    }
+
+    // GET http://localhost:8080/user/sms
+    @GetMapping("/user/sms")
+    public String SmsForm(){
+        return "user/sms-form";
     }
 }

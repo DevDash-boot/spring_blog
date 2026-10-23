@@ -23,9 +23,7 @@ public class Reply {
     // id와 createdAt 은 자동으로 채워지므로 빌더에서 제외
     @Builder
     public Reply(String comment, User user, Board board) {
-        this.id = id;
         this.comment = comment;
-        this.createdAt = createdAt;
         this.user = user;
         this.board = board;
     }

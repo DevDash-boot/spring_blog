@@ -1,7 +1,10 @@
 package com.tenco.spring_blog.user;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -35,6 +38,10 @@ public class User {
 
     // 프로필 이미지 파일 이름(선택 사항이므로 null 가능)
     private String profileImage;
+
+    @Column(nullable = false)
+    @ColumnDefault("false")
+    private boolean certification = false;
 
     // 사용자의 역할 목록(User ---- 1 : N ---- UserRole, 단방향)
     // [cascade, orphanRemoval] : 두 옵션은 부모 쪽의 @OneToMany 컬렉션에 붙인다. User가 List<UserRole>을 가지고 있다.
