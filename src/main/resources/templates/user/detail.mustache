@@ -7,15 +7,15 @@
             <div class="text-center mb-4">
                 <!-- 프로필 이미지가 있을 경우 -->
                 {{#user.profileImage}}
-                <img src="{{user.profileImage}}" alt="" class="rounded-circle boader"
-                     style="width: 200px; height: 200px; object-fit: cover">
+                    <img src="{{user.profileImage}}" alt="" class="rounded-circle boader"
+                         style="width: 200px; height: 200px; object-fit: cover">
                 {{/user.profileImage}}
                 <!-- 프로필 이미지가 없을 경우 -->
                 {{^user.profileImage}}
-                <div class="rounded-circle border bg-secondary d-inline-flex align-items-center justify-content-center"
-                     style="width: 200px; height: 200px;">
-                    <span class="text-white">프로필 이미지 없음</span>
-                </div>
+                    <div class="rounded-circle border bg-secondary d-inline-flex align-items-center justify-content-center"
+                         style="width: 200px; height: 200px;">
+                        <span class="text-white">프로필 이미지 없음</span>
+                    </div>
                 {{/user.profileImage}}
             </div>
             <div class="mb-3">
@@ -30,12 +30,53 @@
                 <label for="" class="form-label fw-bold">가입일</label>
                 <p class="form-control-plaintext">{{user.createdAt}}</p>
             </div>
-            <div class="mb-3 text-center" >
+
+            {{! 보유 포인트 + 충전 결제와 연동}}
+            <div class="mb-3">
+                <label for="" class="form-label fw-bold">보유포인트</label>
+                <p class="form-control-plaintext">
+                    <span id="point-display">{{user.point}} <b> P</b></span>
+                </p>
+                <div class="input-group" style="max-width: 320px;">
+                    <input type="number" id="charge-amount" class="form-control"
+                           placeholder="충전할 포인트" value="1000" min="1">
+                    <button type="button" class="btn btn-outline-success" onclick="chargePoint()">포인트 충전</button>
+                </div>
+            </div>
+
+            <div class="mb-3 text-center">
                 <a href="/user/update" class="btn btn-primary">회원 정보 수정</a>
                 <a href="/" class="btn btn-secondary">목록으로</a>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // 포인트 충전 API 호출 (추후 결제 연동 또는 삭제)
+    async function chargePoint() {
+        const amount = Number(document.querySelector("#charge-amount").value);
+        if (!amount || amount <= 0) {
+            alert("충전할 포인트를 올바르게 입력해주세요.");
+            return;
+        }
+        try {
+            const response = await fetch("/api/point/charge", {
+                method: "POST",
+                headers: {"Content-Type": "application/json;"},
+                body: JSON.stringify({amount: amount})
+            });
+            const result = await response.json();   // body 영역의 데이터를 자바스크립트 형태로 바꿔줌
+            // 여기서 백엔드가 만들어줘야하는 코드는 point와 message 부분이다.
+            // 이 script 코드만 보고 백엔드에서는 어떤 것이 필요한지 알 수 있어야한다.
+            if (response.ok) {
+                document.querySelector("#point-display").innerHTML = result.point + "<b> P<b>";
+            }
+            alert(result.message);
+        } catch (e) {
+            alert("서버와 통신하지 못했습니다.");
+        }
+    }
+</script>
 
 {{> layout/footer}}

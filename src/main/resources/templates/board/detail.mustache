@@ -4,12 +4,12 @@
 
     {{! 수정, 삭제 버튼: 오른쪽 정렬 }}
     {{#isOwner}}
-    <div class="d-flex justify-content-end">
-        <a href="/board/{{board.id}}/update" class="btn btn-warning me-1">수정</a>
-        <form action="/board/{{board.id}}/delete" method="post">
-            <button class="btn btn-danger">삭제</button>
-        </form>
-    </div>
+        <div class="d-flex justify-content-end">
+            <a href="/board/{{board.id}}/update" class="btn btn-warning me-1">수정</a>
+            <form action="/board/{{board.id}}/delete" method="post">
+                <button class="btn btn-danger">삭제</button>
+            </form>
+        </div>
     {{/isOwner}}
 
     <div class="d-flex justify-content-end">
@@ -17,11 +17,33 @@
     </div>
 
     <div>
-        <h2><b>{{board.title}}</b></h2>
+        <h2>
+            <b>{{board.title}}</b>
+            {{#board.premium}}<span class="badge bg-warning text-dark">유료</span>{{/board.premium}}
+        </h2>
         <hr>
-        <div class="m-4 p-2">
-            {{board.content}}
-        </div>
+        {{#board.canRead}}
+            <div class="m-4 p-2">
+                {{board.content}}
+            </div>
+        {{/board.canRead}}
+        {{! 유료 게시글에 접근 권한이 없는 상태}}
+        {{^board.canRead}}
+            <div>
+                <p>유료 게시글 입니다. 구매 후 내용을 볼 수 있습니다. 금액은 500P입니다.</p>
+                {{! 로그인 된 상태에서 포인트 차감을 통해 해당 게시글을 구매/ 처리해야 한다. (DB 저장해야 함)}}
+                {{#sessionUserDto}}
+                    <form action="/board/{{board.id}}/purchase" method="POST"
+                          onsubmit="return confirm('500포인트로 이 게시글을 구매하시겠습니까?')">
+                        <button type="submit" class="btn btn-primary">구매하기 500P</button>
+                    </form>
+                {{/sessionUserDto}}
+                {{! 로그인 안 된 사람은 로그인 페이지로 이동}}
+                {{^sessionUserDto}}
+                    <a href="/login" class="btn btn-outline-primary">로그인 후 구매</a>
+                {{/sessionUserDto}}
+            </div>
+        {{/board.canRead}}
     </div>
 
     {{! 댓글: 아직 기능이 없어 화면만 만들어 둡니다 }}
@@ -39,18 +61,18 @@
         <div class="list-group">
             <!-- 댓글 시작 -->
             {{#replyList}}
-            <div class="list-group-item d-flex justify-content-between align-items-center ">
-                <div class="d-flex">
-                    <div class="px-1 me-1 bg-primary text-white rounded">{{username}}</div>
-                    <div>{{comment}}</div>
+                <div class="list-group-item d-flex justify-content-between align-items-center ">
+                    <div class="d-flex">
+                        <div class="px-1 me-1 bg-primary text-white rounded">{{username}}</div>
+                        <div>{{comment}}</div>
+                    </div>
+                    {{#isOwner}}
+                        <form action="/reply/{{id}}/delete" method="post">
+                            <input type="hidden" name="boardId" value="{{board.id}}">
+                            <button class="btn"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                    {{/isOwner}}
                 </div>
-                {{#isOwner}}
-                <form action="/reply/{{id}}/delete" method="post">
-                    <input type="hidden" name="boardId" value="{{board.id}}">
-                    <button class="btn"><i class="fa-solid fa-trash"></i></button>
-                </form>
-                {{/isOwner}}
-            </div>
             {{/replyList}}
             <!-- 댓글 종료 -->
         </div>

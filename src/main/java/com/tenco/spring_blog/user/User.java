@@ -1,5 +1,7 @@
 package com.tenco.spring_blog.user;
 
+import com.tenco.spring_blog._core.error.Exception400;
+import com.tenco.spring_blog._core.error.NotEnoughPointException;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -48,19 +50,41 @@ public class User {
     @ColumnDefault("'LOCAL'")   // 문자열이므로 안에 작은 따옴표 필수
     private OAuthProvider provider;
 
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private int point; // Integer가 아니기 때문에 null값 세팅이 필요 없다. 또 builder에 안 넣어도 된다.
+
+    // 포인트 관련 편의 메서드 추가
+    public void chargePoint(int amount) {
+        if (amount <= 0) {
+            throw new Exception400("충전할 포인트는 0보다 커야합니다.");
+        }
+        this.point += amount;
+    }
+
+    public void deductPoint(int amount) {
+        if (amount <= 0) {
+            throw new Exception400("차감할 포인트는 0보다 커야 한다.");
+        }
+        if (this.point < amount) {
+            throw new NotEnoughPointException("마이 페이지에서 충전 후 다시 시도해주세요.");
+        }
+        this.point -= amount;
+    }
+
     // 역할 추가(회원가입 시 기본 USER 부여, 관리자는 직접 지정)
-    public void addRole(Role role){
+    public void addRole(Role role) {
         // 이미 가진 역할이면 추가하지 않음(코드에서 1차 방어)
-        if(hasRole(role)){
+        if (hasRole(role)) {
             return;
         }
         this.roles.add(UserRole.builder().role(role).build());
     }
 
     // 해당 역할을 가지고 있는지 확인
-    public boolean hasRole(Role role){
-        for(UserRole u : this.roles){
-            if(u.getRole() == role){
+    public boolean hasRole(Role role) {
+        for (UserRole u : this.roles) {
+            if (u.getRole() == role) {
                 return true;    // 찾으면 바로 true
             }
         }
@@ -68,7 +92,7 @@ public class User {
     }
 
     // 로그인 한 사용자의 관리자 여부 확인 메서드
-    public boolean isAdmin(){
+    public boolean isAdmin() {
         return hasRole(Role.ADMIN); // 고정값 : 관리자 여부인지만 확인
     }
 
@@ -92,12 +116,12 @@ public class User {
     }
 
     // 프로필 경로
-    public String getProfilePath(){
-        if(this.profileImage == null){
+    public String getProfilePath() {
+        if (this.profileImage == null) {
             return null;
         }
         // 카카오 소셜 로그인 시 http로 시작하는 이미지가 들어온다.
-        if(this.profileImage.startsWith("http")){
+        if (this.profileImage.startsWith("http")) {
             return this.profileImage;
         }
         // 로컬 사용자의 이미지

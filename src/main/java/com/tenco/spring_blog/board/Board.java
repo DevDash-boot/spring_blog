@@ -1,6 +1,5 @@
 package com.tenco.spring_blog.board;
 
-import com.tenco.spring_blog.user.SessionUserDto;
 import com.tenco.spring_blog.user.User;
 import com.tenco.spring_blog._core.util.MyDateUtil;
 import jakarta.persistence.*;
@@ -8,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
@@ -19,6 +19,9 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Board {
+    // 유료 게시글 가격
+    public static final int PREMIUM_PRICE = 500;
+
     @Id // 이 필드가 기본키임을 나타냄
     // 기본키 값을 자동으로 생성. IDENTITY 전략 : DB의 기본 설정을 따른다. AUTO_INCREMENT 기능 적용
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +30,10 @@ public class Board {
     // 별도 어노테이션이 없으면 필드명이 컬럼명이 된다.
     private String title;
     private String content;
+
+    @Column(nullable = false)
+    @ColumnDefault("false")
+    private boolean premium;
 
     // private String username;
     // N:1
@@ -44,10 +51,11 @@ public class Board {
     // 비즈니스 로직을 위한 생성자 설계
     // id와 createdAt은 JPA가 자동으로 설정하므로 매개변수에서 제외
     @Builder
-    public Board(String title, String content, User user){
+    public Board(String title, String content, User user, boolean premium){
         this.title = title;
         this.content = content;
         this.user = user;
+        this.premium = premium;
     }
 
     // 자신의 상태값을 변경하는 메서드 추가(영속성 엔티티를 수정하는 메서드)
@@ -57,6 +65,7 @@ public class Board {
         // 영속 상태에 있는 엔티티의 필드값을 여기서 변경
         this.title = updateDto.getTitle();
         this.content = updateDto.getContent();
+        this.premium = updateDto.isPremium();
         // 변경 감지(Dirty Checking) 동작 과정
         // 1. 영속성 컨텍스트가 엔티티 최초 상태를 스냅샷으로 따로 보관
         // 2. 필드값 변경 시 현재 시점 상태와 스냅샷 비교
