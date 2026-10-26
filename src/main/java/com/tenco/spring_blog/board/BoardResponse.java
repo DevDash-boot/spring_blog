@@ -25,8 +25,13 @@ public class BoardResponse {
         private Long userId;
         private String username;
         private String createdAt;
+        private boolean premium; // 유료 게시글 여부
+        private int price;  // 가격 안내 문구용
+        private boolean owner;  // 로그인 한 사용자가 작성자인지
+        private boolean purchased;  // 로그인 한 사용자가 구매했는지
+        private boolean canRead;    // 본문 열람 가능 여부 - 무료글 or 작성자 or 구매자 -> ok(true)
 
-        public DetailDto(Board board) {
+        public DetailDto(Board board, boolean owner, boolean purchased) {
             this.id = board.getId();
             this.title = board.getTitle();
             this.content = board.getContent();
@@ -37,6 +42,16 @@ public class BoardResponse {
             }
             if (board.getCreatedAt() != null) {
                 this.createdAt = MyDateUtil.timestampFormat(board.getCreatedAt());
+            }
+
+            this.premium = board.isPremium();
+            this.price = Board.PREMIUM_PRICE;
+            this.owner = owner;
+            this.purchased = purchased;
+            this.canRead = !premium || owner || purchased;
+            // 개발자 도구 등으로 변경하는 것을 방지
+            if (!canRead) {
+                this.content = null;
             }
         }
     }
@@ -106,18 +121,19 @@ public class BoardResponse {
         }
     }
 
-
     // 게시글 수정 화면 응답 DTO
     @Data
     public static class updateFormDto {
         private Long id;
         private String title;
         private String content;
+        private boolean premium;
 
         public updateFormDto(Board board) {
             this.id = board.getId();
             this.title = board.getTitle();
             this.content = board.getContent();
+            this.premium = board.isPremium();
         }
     }
 }

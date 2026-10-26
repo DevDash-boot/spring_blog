@@ -2,9 +2,7 @@ package com.tenco.spring_blog.user;
 
 import com.tenco.spring_blog._core.error.Exception400;
 import com.tenco.spring_blog._core.error.Exception404;
-import com.tenco.spring_blog._core.util.Define;
 import com.tenco.spring_blog._core.util.FileUtil;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,7 +38,7 @@ public class UserService {
 
         // 이메일 인증 여부 확인
         // 인증하지 않았거나 인증한 이메일과 가입 폼의 이메일이 다르면 거부
-        if(verifiedEmail == null || !verifiedEmail.equals(joinDto.getEmail())){
+        if (verifiedEmail == null || !verifiedEmail.equals(joinDto.getEmail())) {
             throw new Exception400("이메일 인증을 먼저 완료해주세요.");
         }
 
@@ -177,5 +175,13 @@ public class UserService {
                 .ifPresent(user -> {
                     throw new Exception400("이미 등록된 이메일입니다.");
                 });
+    }
+
+    @Transactional
+    public int chargePoint(Long userId, Integer amount) {
+        User user = findById(userId);
+        user.chargePoint(amount);   // 더티 체킹으로 UPDATE됨
+        log.info("포인트 충전 완료. 사용자 ID : {}, 충전 포인트 : {}, 보유 포인트 : {}", userId, amount, user.getPoint());
+        return user.getPoint();
     }
 }

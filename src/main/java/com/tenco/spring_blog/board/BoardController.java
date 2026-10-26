@@ -1,6 +1,7 @@
 package com.tenco.spring_blog.board;
 
 import com.tenco.spring_blog._core.util.Define;
+import com.tenco.spring_blog.purchase.PurchaseService;
 import com.tenco.spring_blog.reply.ReplyResponse;
 import com.tenco.spring_blog.reply.ReplyService;
 import com.tenco.spring_blog.user.SessionUserDto;
@@ -22,6 +23,15 @@ public class BoardController {
 
     private final BoardService boardService;
     private final ReplyService replyService;
+    private final PurchaseService purchaseService;
+
+    // 유료 게시글 구매 요청 URL
+    @PostMapping("/board/{id}/purchase")
+    public String purchase(@PathVariable(name = "id")Long id, HttpSession session){
+        SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
+        purchaseService.purchase(id, sessionUserDto.getId());
+        return "redirect:/board/" + id;
+    }
 
     // 조회하기
     // GET - http://localhost:8080/ , http://localhost:8080/board/list
@@ -42,21 +52,16 @@ public class BoardController {
     // GET - http://localhost:8080/board/3
     @GetMapping("/board/{id}")
     public String detail(@PathVariable(name = "id") Long id, Model model, HttpSession session) {
-        BoardResponse.DetailDto detailDto = boardService.findById(id);
         SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
-
-        // 로그인하지 않았으면 null로 설정
         Long sessionUserId = (sessionUserDto == null) ? null : sessionUserDto.getId();
-
-        // 로그인 후 작성자 본인일 때만 수정, 삭제 버튼 표시
-        boolean isOwner = sessionUserDto != null && detailDto.getUserId().equals(sessionUserDto.getId());
-
-        // 댓글 목록 조회
+        BoardResponse.DetailDto detailDto = boardService.findById(id, sessionUserId);
+        boolean isOwner = sessionUserDto != null
+                && detailDto.getUserId().equals(sessionUserDto.getId());
         List<ReplyResponse.ListDto> replyList = replyService.findAllByBoardId(id, sessionUserId);
-
         model.addAttribute("board", detailDto);
         model.addAttribute("isOwner", isOwner);
         model.addAttribute("replyList", replyList);
+        model.addAttribute("sessionUserDto", sessionUserDto);
 
         return "board/detail";
     }

@@ -1,7 +1,9 @@
 package com.tenco.spring_blog.board;
 
+import com.tenco.spring_blog._core.error.Exception400;
 import com.tenco.spring_blog._core.error.Exception403;
 import com.tenco.spring_blog._core.error.Exception404;
+import com.tenco.spring_blog.purchase.PurchaseJpaRepository;
 import com.tenco.spring_blog.reply.ReplyJpaRepository;
 import com.tenco.spring_blog.user.SessionUserDto;
 import com.tenco.spring_blog.user.User;
@@ -15,8 +17,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 // Board 관련 비즈니스 로직을 처리하는 Service 계층
 
 @Slf4j
@@ -29,6 +29,7 @@ public class BoardService {
     private final BoardJpaRepository boardJpaRepository;
     private final UserJpaRepository userJpaRepository;
     private final ReplyJpaRepository replyJpaRepository;
+    private final PurchaseJpaRepository purchaseJpaRepository;
 
     /*
      * 게시글 저장
@@ -41,7 +42,6 @@ public class BoardService {
     @Transactional
     public Board save(BoardRequest.saveDto saveDto, SessionUserDto sessionUser) {
         log.info("게시글 저장 시작 - 제목 : {}, 작성자 : {}", saveDto.getTitle(), sessionUser.getUsername());
-        // Board board = saveDto.toEntity(sessionUser);
         User user = userJpaRepository.getReferenceById(sessionUser.getId());
         Board savedBoard = boardJpaRepository.save(saveDto.toEntity(user));
         log.info("게시글 저장 완료 - ID : {}, 제목 : {}", savedBoard.getId(), savedBoard.getTitle());
@@ -53,19 +53,17 @@ public class BoardService {
      * @param id : 게시글 PK
      * @return : 게시글 정보 (작성자 정보 포함)
      */
-    public BoardResponse.DetailDto findById(Long id) {
+    public BoardResponse.DetailDto findById(Long id, Long sessionUserId) {
         log.info("게시글 상세 조회 서비스 - ID : {}", id);
         // boardJpaRepository.findById(id) 이 메서드 대신 JOIN FETCH를 사용함
         Board board = boardJpaRepository.findByIdJoinUser(id)
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다."));
-//        Board board = boardJpaRepository.findByIdJoinUser(id)   // 직접 정의한 쿼리
-//                .orElseThrow(() -> {
-//                    log.warn("게시글 조회 실패 - ID : {}", id);
-//                    return new Exception404("게시글을 찾을 수 없습니다.");
-//                });
-        // 서비스 단에서 지연 로딩을 하기 위해 미리 호출한다면 Board 엔티티에 User 엔티티가 셋팅되어 Controller로 넘어가서 주석 처리
-//        log.info("게시글 상세 조회 완료 - 제목 : {}, 작성자 : {}", board.getTitle(), board.getUser().getUsername());
-        return new BoardResponse.DetailDto(board);
+        // 로그인 하지 않았으면 작성자도 구매자도 아님
+        boolean owner = sessionUserId != null && board.isOwner(sessionUserId);
+        // 로그인 한 상태에서 구매 이력 테이블에 존재하는지
+        boolean purchased = sessionUserId != null && purchaseJpaRepository.existsByUserIdAndBoardId(sessionUserId, id);
+
+        return new BoardResponse.DetailDto(board, owner, purchased);
     }
 
     // 게시글 목록 조회 페이징 처리
@@ -79,7 +77,7 @@ public class BoardService {
         Pageable pageable = PageRequest.of(pageIndex, validSize, Sort.by(Sort.Direction.DESC, "id"));
         // isBlank() : null이 아닌 상태에서 공백 제거 후 개수 확인
         Page<Board> boardPage;
-        if(keyword == null || keyword.isBlank()){
+        if (keyword == null || keyword.isBlank()) {
             // 페이징 처리가 된 게시글 목록 조회 요청
             boardPage = boardJpaRepository.findAllJoinUser(pageable);
         } else {
@@ -115,7 +113,7 @@ public class BoardService {
         if (!board.isOwner(sessionUser.getId())) { // 2. 권한 체크
             throw new Exception403("본인이 작성한 게시글만 수정할 수 있습니다");
         }
-        board.update(updateDto); // 3. 더티 채킹을 활용한 수정
+        board.update(updateDto);
         log.info("게시글 수정 완료");
         return board;
     }
@@ -135,6 +133,13 @@ public class BoardService {
                     id, board.getUser().getUsername(), sessionUser.getUsername());
             throw new Exception403("본인이 작성한 게시글만 삭제할 수 있습니다");
         }
+
+        // 구매 내역이 있으면 삭제 불가. 구매자의 구매 내역과 포인트 보호
+        if (purchaseJpaRepository.countByBoardId(id) > 0) {
+            log.warn("구매 내역이 있어 게시글을 삭제 할 수 없음 - 게시글 ID : {}", id);
+            throw new Exception400("구매 내역이 있어 게시글을 삭제 할 수 없습니다.");
+        }
+
         replyJpaRepository.deleteByBoardId(id); // 댓글 전체 삭제
         boardJpaRepository.deleteById(id);  // 게시글 삭제
         log.info("게시글 삭제 완료");
