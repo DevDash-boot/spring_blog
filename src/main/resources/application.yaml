@@ -33,8 +33,16 @@ server:
       tracking-modes: cookie    # 세션 번호를 쿠키로만 전달 (주소에 ;jsessionid 를 붙이지 않음)
 
 # 초기 파라미터 설정
+# 카카오 로그인
 oauth:
   kakao:
     client-id: ${KAKAO_CLIENT_ID}
     client-secret: ${KAKAO_CLIENT_SECRET}
     redirect-uri: ${REDIRECT_URI}
+
+# 포트원 V2 (결제 설정)
+# ":" 뒤가 비어 있으면 .env 값이 없어도 서버는 시작됨(결제는 실패)
+portone:
+  store-id: ${PORTONE_STORE_ID:}
+  channel-key: ${PORTONE_CHANNEL_KEY:}
+  api-secret: ${PROTONE_API_SECRET:}

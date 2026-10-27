@@ -118,7 +118,7 @@ public class UserService {
 
     // 사용자 정보 조회
     // 서비스 안에서만 쓰는 조회용 메서드(캡슐화)
-    private User findById(Long id) {
+    public User findById(Long id) {
         log.info("사용자 정보 조회 - ID : {}", id);
         return userJpaRepository.findById(id).orElseThrow(() -> new Exception404("사용자를 찾을 수 없습니다."));
     }
