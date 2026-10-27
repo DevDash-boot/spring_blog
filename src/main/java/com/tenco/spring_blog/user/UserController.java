@@ -18,6 +18,18 @@ public class UserController {
     private final UserService userService;
     private final KakaoLoginService kakaoLoginService;
 
+    // GET http://localhost:8080/user/point/charge (포인트 충전 화면)
+    @GetMapping("/user/point/charge")
+    public String chargePointForm(Model model, HttpSession session) {
+        SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
+        if (sessionUserDto == null) {
+            return "redirect:/login";
+        }
+        User user = userService.findById(sessionUserDto.getId());
+        model.addAttribute("user", user);
+        return "user/charge-point";
+    }
+
     @GetMapping("/kakao-login")
     public String kakaoLogin() {
         return "redirect:" + kakaoLoginService.getAuthorizeUrl();
@@ -25,7 +37,7 @@ public class UserController {
 
     // 리다이랙트로 들어와서 카카오 서버가 코드값을 동적으로 뽑아주는 URL
     @GetMapping("/oauth/kakao")
-    public String kakaoCallback(@RequestParam(name= "code", required = false)String code, HttpSession session){
+    public String kakaoCallback(@RequestParam(name = "code", required = false) String code, HttpSession session) {
         SessionUserDto sessionUserDto = kakaoLoginService.login(code);
         session.setAttribute(Define.SESSION_USER, sessionUserDto);
         return "redirect:/";
