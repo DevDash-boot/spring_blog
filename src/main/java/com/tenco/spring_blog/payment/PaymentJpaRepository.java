@@ -16,4 +16,5 @@ public interface PaymentJpaRepository extends JpaRepository<Payment, Long> {
         where p.paymentId = :paymentId
     """)
     boolean existsByPaymentId(@Param("paymentId")String paymentId);
+
 }

@@ -132,4 +132,10 @@ public class UserController {
         model.addAttribute("purchaseList", purchaseList);
         return "user/purchase-list";
     }
+
+    @GetMapping("/user/payment/list")
+    public String paymentList(HttpSession session) {
+        SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
+        return "user/payment-list";
+    }
 }
