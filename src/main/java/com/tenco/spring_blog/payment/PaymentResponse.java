@@ -1,6 +1,7 @@
 package com.tenco.spring_blog.payment;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.tenco.spring_blog._core.util.MyDateUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -44,6 +45,26 @@ public class PaymentResponse {
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Amount {
             private Integer total;
+        }
+    }
+
+    @Data
+    public static class ListDto {
+        private Long id;
+        private String paymentId;
+        private String pgTxId;
+        private String statusDisplay;
+        private int amount;
+        private String paidAt;
+
+        @Builder
+        public ListDto(Payment payment) {
+            this.id = payment.getId();
+            this.paymentId = payment.getPaymentId();
+            this.pgTxId = payment.getPgTxId();
+            this.statusDisplay = payment.getStatus().getDisplayName();
+            this.amount = payment.getAmount();
+            this.paidAt = MyDateUtil.timestampFormat(payment.getCreatedAt());
         }
     }
 }

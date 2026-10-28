@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -73,5 +74,10 @@ public class PaymentService {
         log.info("결제 완료 및 포인트 충전 - 사용자 ID : {}, paymentId : {}, 금액 : {}",
                 sessionUserId, paymentId, payment.getAmount());
         return new PaymentResponse.CompleteDto(payment.getAmount(), user.getPoint());
+    }
+
+    public List<PaymentResponse.ListDto> findAllByUserId(Long userId) {
+        List<Payment> paymentList = paymentJpaRepository.findAllByUserIdAndStatus(userId, PaymentStatus.PAID);
+        return paymentList.stream().map(PaymentResponse.ListDto::new).toList();
     }
 }
