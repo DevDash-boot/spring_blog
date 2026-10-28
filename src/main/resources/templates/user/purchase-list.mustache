@@ -1,0 +1,44 @@
+{{> layout/header}}
+
+<div class="container p-5">
+    <div class="card">
+        <div class="card-header">
+            <h4><b>구매 내역</b></h4>
+        </div>
+        <div class="card-body">
+            <!-- 구매 항목 카드 -->
+            {{#purchaseList}}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h5 class="card-title mb-2"><a href="/board/{{boardId}}" style="text-decoration: none">{{boardTitle}}</a></h5>
+                                <!-- font-awesome이랑 연결되어있다(header 확인) 그래서 fa-형태로 이모티콘 사용 가능 -->
+                                <p class="text-muted mb-2"><i class="fa-solid fa-user"></i> 작성자 : {{boardUsername}}</p>
+                                <p class="text-muted mb-2"><i class="fa-solid fa-calendar"></i> 구매일 : {{purchasedAt}}
+                                </p>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-primary fs-6">-{{price}} P</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {{/purchaseList}}
+            <!-- 구매 내역이 없을 때 -->
+            {{^purchaseList}}
+                <div class="text-center py-5">
+                    <i class="fa-solid fa-cart-shopping fa-5x text-muted mb-3"></i>
+                    <h5 class="text-muted">구매 내역이 없습니다.</h5>
+                    <p class="text-muted">유료 게시글을 구매해 보세요!</p>
+                    <a href="/" class="btn btn-primary">게시글 목록으로</a>
+                </div>
+            {{/purchaseList}}
+            <div class="mb-4">
+                <a href="/user/detail" class="btn btn-secondary">마이페이지로 돌아가기</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{> layout/footer}}

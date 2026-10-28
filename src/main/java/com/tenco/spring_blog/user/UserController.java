@@ -1,6 +1,8 @@
 package com.tenco.spring_blog.user;
 
 import com.tenco.spring_blog._core.util.Define;
+import com.tenco.spring_blog.purchase.PurchaseResponse;
+import com.tenco.spring_blog.purchase.PurchaseService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +12,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
+
 @Slf4j
 @RequiredArgsConstructor
 @Controller // IoC (제어의 역전) 싱글톤 패턴으로 관리
@@ -17,6 +21,7 @@ public class UserController {
 
     private final UserService userService;
     private final KakaoLoginService kakaoLoginService;
+    private final PurchaseService purchaseService;
 
     // GET http://localhost:8080/user/point/charge (포인트 충전 화면)
     @GetMapping("/user/point/charge")
@@ -118,5 +123,13 @@ public class UserController {
         SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
         userService.deleteProfileImage(sessionUserDto.getId());
         return "redirect:/user/profile";
+    }
+
+    @GetMapping("/user/purchase/list")
+    public String purchaseList(Model model, HttpSession session) {
+        SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
+        List<PurchaseResponse.ListDto> purchaseList= purchaseService.findAllByUserId(sessionUserDto.getId());
+        model.addAttribute("purchaseList", purchaseList);
+        return "user/purchase-list";
     }
 }

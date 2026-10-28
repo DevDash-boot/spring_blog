@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PurchaseJpaRepository extends JpaRepository<Purchase, Long> {
@@ -28,5 +29,15 @@ public interface PurchaseJpaRepository extends JpaRepository<Purchase, Long> {
     @Modifying
     @Query("delete from Purchase p where p.board.id = :boardId")
     boolean deleteByBoardId(@Param("boardId")Long boardId);
+
+    // 로그인 사용자 구매 내역 조회
+    @Query("""
+                select p from Purchase p
+                join fetch p.user
+                join fetch p.board b
+                where p.user.id = :userId
+                order by p.id desc
+            """)
+    List<Purchase> findAllByUserIdJoinBoard(@Param("userId")Long userId);
 }
 
