@@ -56,15 +56,20 @@ public class PaymentResponse {
         private String statusDisplay;
         private int amount;
         private String paidAt;
+        private boolean cancelled;  // 환불 완료 결제 인지 확인
+        private boolean refundable;     // 환불 가능한지
 
+        // 환불 가능 여부는 환불 요청 기록이 있어야 알 수 있으므로 서비스에서 계산해서 넘겨준다.
         @Builder
-        public ListDto(Payment payment) {
+        public ListDto(Payment payment, boolean refundable) {
             this.id = payment.getId();
             this.paymentId = payment.getPaymentId();
             this.pgTxId = payment.getPgTxId();
             this.statusDisplay = payment.getStatus().getDisplayName();
             this.amount = payment.getAmount();
             this.paidAt = MyDateUtil.timestampFormat(payment.getCreatedAt());
+            this.cancelled = payment.getStatus() == PaymentStatus.CANCELLED;
+            this.refundable = refundable;
         }
     }
 }
