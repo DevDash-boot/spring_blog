@@ -32,6 +32,6 @@ spring:
   # 서버 시작 시 이 파일 실행
   sql:
     init:
-      mode: always  # always: DB 종류와 관계없이 항상 초기화. 기본값은 embedded이 있고, 추가로 never가 있음
+      mode: never  # always: DB 종류와 관계없이 항상 초기화. 기본값은 embedded이 있고, 추가로 never가 있음
       data-locations:
         - classpath:db/data.sql

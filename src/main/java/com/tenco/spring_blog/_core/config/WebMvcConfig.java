@@ -46,7 +46,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
         // 로그인 검사
         registry.addInterceptor(loginInterceptor)
                 // 인터셉터가 동작할 URL 패턴을 지정
-                .addPathPatterns("/user/**", "/board/**", "/reply/**", "/admin/**")
+                .addPathPatterns("/user/**", "/board/**", "/reply/**", "/admin/**", "/refund/**")
                 // 인터셉터에서 제외할 URL 패턴을 지정
                 // \\d+는 정규 표현식으로 1개 이상의 숫자를 의미
                 // 예 : /board/1, /board/123 등 상세보기는 로그인 없어도 접근 가능

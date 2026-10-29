@@ -12,24 +12,47 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start">
                             <div class="flex-grow-1">
-                                <h5 class="card-title mb-2">결제 #{id}</h5>
+                                <h5 class="card-title mb-2">결제 #{{id}}</h5>
                                 <p class="text-muted mb-2"><i class="fa-solid fa-receipt"></i> 결제번호 :{{paymentId}}</p>
                                 {{#pgTxId}}
                                     <p class="text-muted mb-2"><i class="fa-solid fa-hashtag"></i> PG 거래번호 : {{pgTxId}}
                                     </p>
                                 {{/pgTxId}}
-                                {{^pgTxId}}
-                                    <p class="text-muted mb-2"><i class="fa-solid fa-hashtag"></i> PG 거래번호 : T1234567890
-                                    </p>
-                                {{/pgTxId}}
                                 <p class="text-muted mb-2"><i class="fa-solid fa-calendar"></i> 결제일 : {{paidAt}}</p>
-                                <p class="text-muted mb-0">
-                                    <i class="fa-solid fa-circle-info"></i> 상태 :
-                                    <span class="badge bg-success">{{statusDisplay}}</span>
-                                </p>
+                                <!--    결제 완료/ 환불 완료  -->
+                                {{^cancelled}}
+                                    <p class="text-muted mb-0">
+                                        <i class="fa-solid fa-circle-info"></i> 상태 :
+                                        <span class="badge bg-success">{{statusDisplay}}</span>
+                                    </p>
+                                {{/cancelled}}
+
+                                {{#cancelled}}
+                                    <p class="text-muted mb-0">
+                                        <i class="fa-solid fa-circle-info"></i> 상태 :
+                                        <span class="badge bg-secondary">{{statusDisplay}}</span>
+                                    </p>
+                                {{/cancelled}}
                             </div>
-                            <div class="text-end">
-                                <span class="badge bg-primary fs-6">+{{amount}} P</span>
+                            <div class="flex-direction-column">
+                                {{^cancelled}}
+                                    <div class="text-end mb-2">
+                                        <span class="badge bg-primary fs-6">+{{amount}} P</span>
+                                    </div>
+                                {{/cancelled}}
+                                {{#cancelled}}
+                                    <div class="text-end mb-2">
+                                    <span class="badge bg-secondary text-decoration-line-through fs-6">+{{amount}}
+                                        P</span>
+                                    </div>
+                                {{/cancelled}}
+                                <!--   환불 여부 버튼 추가 -->
+                                {{#refundable}}
+                                    <div class="text-end">
+                                        <!-- 환불 요청 폼 태그 이동 -->
+                                        <a href="/refund/request/{{id}}" class="btn btn-outline-danger btn-sm">환불 요청</a>
+                                    </div>
+                                {{/refundable}}
                             </div>
                         </div>
                     </div>
@@ -44,6 +67,9 @@
                 </div>
             {{/paymentList}}
             <div class="mt-4">
+                <a href="/refund/list" class="btn btn-info">
+                    <i class="fa-solid fa-rotate-left"></i>환불 요청 내역
+                </a>
                 <a href="/user/detail" class="btn btn-secondary">마이페이지로 돌아가기</a>
             </div>
         </div>
