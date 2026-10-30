@@ -35,7 +35,7 @@
             <div class="mb-3">
                 <label for="" class="form-label fw-bold">보유포인트</label>
                 <p class="form-control-plaintext">
-                    <span id="point-display">{{user.point}} <b> P</b></span>
+                    <span id="point-display" class="point">{{user.point}} <b> P</b></span>
                     <a href="/user/point/charge" class="btn btn-success">포인트 충전(PG 결제)</a>
                 </p>
             </div>
@@ -49,4 +49,12 @@
     </div>
 </div>
 
+<script>
+    document.querySelectorAll(".point").forEach((element) => {
+        element.textContent = element.textContent.replace(
+                /\B(?=(\d{3})+(?!\d))/g,
+                ","
+        );
+    });
+</script>
 {{> layout/footer}}

@@ -72,4 +72,19 @@ public class PaymentResponse {
             this.refundable = refundable;
         }
     }
+
+    // 포트원 결제 취소 응답
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class PortOneCancel {
+        Cancellation cancellation;
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Cancellation {
+            private String status;
+            private String id;
+            private int totalAmount;
+        }
+    }
 }

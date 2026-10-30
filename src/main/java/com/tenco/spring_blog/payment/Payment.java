@@ -66,4 +66,8 @@ public class Payment {
         this.status = PaymentStatus.PAID;   // 결제 상태를 완료로 변경
         this.pgTxId = pgTxId;   // null 값 허용
     }
+
+    public void markCancelled() {
+        this.status = PaymentStatus.CANCELLED;
+    }
 }

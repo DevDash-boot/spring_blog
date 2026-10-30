@@ -37,13 +37,13 @@
                             <div class="flex-direction-column">
                                 {{^cancelled}}
                                     <div class="text-end mb-2">
-                                        <span class="badge bg-primary fs-6">+{{amount}} P</span>
+                                        <span class="badge bg-primary fs-6 amount">+{{amount}} 원</span>
                                     </div>
                                 {{/cancelled}}
                                 {{#cancelled}}
                                     <div class="text-end mb-2">
                                     <span class="badge bg-secondary text-decoration-line-through fs-6">+{{amount}}
-                                        P</span>
+                                        원</span>
                                     </div>
                                 {{/cancelled}}
                                 <!--   환불 여부 버튼 추가 -->
@@ -76,4 +76,12 @@
     </div>
 </div>
 
+<script>
+    document.querySelectorAll(".amount").forEach((element) => {
+        element.textContent = element.textContent.replace(
+                /\B(?=(\d{3})+(?!\d))/g,
+                ","
+        );
+    });
+</script>
 {{> layout/footer}}

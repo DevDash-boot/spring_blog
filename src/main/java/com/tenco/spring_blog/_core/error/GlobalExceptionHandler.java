@@ -60,18 +60,6 @@ public class GlobalExceptionHandler {
                 """.formatted(msg);
     }
 
-//    @ExceptionHandler(Exception403.class) // 특정 예외 타입이 발생했을 때 실행될 메서드로 지정
-//    public String ex403(Exception403 e, HttpServletRequest request, Model model){
-//        log.warn("=== 403 Forbidden 에러 발생 ===");
-//        log.warn("요청 URL : {} ", request.getRequestURL());
-//        log.warn("권한 오류 : {} ", e.getMessage());
-//        log.warn("예외 클래스 : {} ", e.getClass().getSimpleName());
-//
-//        model.addAttribute("msg", e.getMessage());
-//
-//        return "err/403";
-//    }
-
     // alert 창이 뜰 수 있게 수정
     @ResponseStatus(HttpStatus.FORBIDDEN)   // 상태코드 403 지정(없으면 200으로 나감)
     @ResponseBody

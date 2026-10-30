@@ -6,7 +6,7 @@
         <div class="card-body">
             <label class="form-label fw-bold">현재 보유 포인트</label>
             <div class="mb-4">
-                <span class="badge bg-primary fs-5">{{user.point}} P</span>
+                <span class="badge bg-primary fs-5 point">{{user.point}} P</span>
             </div>
             <hr>
 
@@ -48,7 +48,7 @@
             </div>
 
             <div class="mb-4">
-                <label class="form-label fw-bold">충전 예정 금액</label>
+                <label class="form-label fw-bold point">충전 예정 금액</label>
                 <p class="form-control-plaintext">
                     <span class="badge bg-success fs-5" id="selected-amount">0</span> P
                 </p>
@@ -113,6 +113,7 @@
             // 결제 실패나 취소 시 응답에 code가 들어 있다.
             if (!paymentRes && paymentRes.code !== undefined) {
                 alert("결제가 완료되지 않았습니다.");
+                return;
             }
 
             // 서버 검증 요청(우리 서버에서 포트원 서버로 직접 HTTP 통신 후 정상적인지 확인하고 포인트 충전)
@@ -124,17 +125,24 @@
 
             const result = await completeRes.json();
             if (!completeRes.ok) {
-                alert("포인트 충전에 실패했습니다.");
+                throw new Error(result.message);
             }
             alert("충전이 완료되었습니다.\n충전금액 : " + result.amount.toLocaleString() +
                     "\n현재 보유 포인트 : " + result.currentPoint);
             location.href = "/user/detail";
         } catch (e) {
-            alert(e.message + ": 서버와 통신하지 못했습니다.");
+            alert("서버와 통신하지 못했습니다.");
         } finally {
             chargeBtn.disabled = false;
         }
     })
+
+    document.querySelectorAll(".point").forEach((element) => {
+        element.textContent = element.textContent.replace(
+                /\B(?=(\d{3})+(?!\d))/g,
+                ","
+        );
+    });
 </script>
 
 {{> layout/footer}}

@@ -1,0 +1,199 @@
+{{> layout/header}}
+
+<div class="container p-5">
+    <div class="card">
+        <div class="card-header"><h2>환불 요청 관리</h2></div>
+        <div class="card-body">
+            <div class="table-responsive">  {{! 화면 크기에 따라 크기 변경}}
+                <table class="table table-hover">
+                    <thead class="table-secondary text-center">
+                    <tr>
+                        <th>NO</th>
+                        <th>신청자</th>
+                        <th>결제번호</th>
+                        <th>환불 금액</th>
+                        <th>요청일</th>
+                        <th>상태</th>
+                        <th>관리</th>
+                    </tr>
+                    </thead>
+                    <tbody class="text-center">
+                    {{#refundList}}
+                        <tr>
+                            <td >{{id}}</td>
+                            <td>{{username}}</td>
+                            <td>{{paymentId}}</td>
+                            <td class="amount">{{amount}} P</td>
+                            <td>{{requestedAt}}</td>
+                            <td>
+                                {{#pending}}
+                                    <span class="badge bg-warning">{{statusDisplay}}</span>
+                                {{/pending}}
+
+                                {{#approved}}
+                                    <span class="badge bg-success">{{statusDisplay}}</span>
+                                {{/approved}}
+
+                                {{#rejected}}
+                                    <span class="badge bg-danger">{{statusDisplay}}</span>
+                                {{/rejected}}
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        data-bs-toggle="modal" data-bs-target="#myModal"
+                                        data-id="{{id}}" data-username="{{username}}" data-amount="{{amount}} 원"
+                                        data-reason="{{reason}}" data-pending="{{pending}}"
+                                        onclick="openRefundModal(this)">상세
+                                </button>
+                                <!-- 환불 요청 상세 모달 -->
+                                <div class="modal fade text-start" id="myModal">
+                                    <div class="modal-dialog modal-dialog-scrollable">
+                                        <div class="modal-content">
+
+                                            <!-- Modal Header -->
+                                            <div class="modal-header">
+                                                <h4 class="modal-title">환불 요청 상세</h4>
+                                                <button type="button" class="btn-close"
+                                                        data-bs-dismiss="modal"></button>
+                                            </div>
+
+                                            <!-- Modal body -->
+                                            <div class="modal-body">
+                                                <!-- 환불 테이블의 PK -->
+                                                <input type="hidden" id="modalRefundId" value="">
+                                                <div class="mb-3">
+                                                    <label for="" class="from-label small text-muted mb-2">신청자</label>
+                                                    <div class="form-control-platintext fw-bold" id="modalUsername">
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="" class="from-label small text-muted mb-2">환불 요청
+                                                        금액</label>
+                                                    <div class="form-control-platintext fw-bold amount"
+                                                         id="modalAmount">
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="" class="from-label small text-muted mb-2">환불 사유</label>
+                                                    <div class="form-control-platintext fw-bold" id="modalReason">
+                                                    </div>
+                                                </div>
+                                                <!-- [거절]을 눌렀을 때만 보이는 입력 창 -->
+                                                <div class="mb-3" id="rejectReasonDiv" style="display: none">
+                                                    <label for="" class="from-label text-danger fw-bold mb-2">거절 사유
+                                                        입력</label>
+                                                    <textarea class="form-control" placeholder="거절 사유 입력"
+                                                              id="rejectReasonInput" rows="2"
+                                                              maxlength="500"></textarea>
+                                                </div>
+                                            </div>
+
+                                            <!-- Modal footer -->
+                                            <!-- 하단 버튼의 상황에 따라 자바스크립트로 버튼 상황 변경 (해당 영역 설정) -->
+                                            <div class="modal-footer" id="modalFooter"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {{/refundList}}
+                    {{^refundList}}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">환불 요청이 없습니다.</td>
+                        </tr>
+                    {{/refundList}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer">
+            <a href="/admin/dashboard" class="btn btn-secondary">관리자 대시보드로 이동</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 상세 버튼 클릭시 버튼의 data-* 값을 모달에 동적으로 채운다.
+    function openRefundModal(button) {
+        document.getElementById("modalRefundId").value = button.dataset.id;
+        document.getElementById("modalUsername").textContent = button.dataset.username;
+        document.getElementById("modalAmount").textContent = button.dataset.amount;
+        document.getElementById("modalReason").textContent = button.dataset.reason;
+
+        // 대기 중 상태라면
+        if (button.dataset.pending === "true") {
+            hideRejectInput();
+        } else {
+            document.getElementById("rejectReasonDiv").style.display = 'none';
+            document.getElementById("modalFooter").innerHTML = `
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+            `;
+        }
+    }
+
+    // 모달 처음 열 시 거절 사유를 안 보이게 처리해야 한다.
+    function hideRejectInput() {
+        const id = document.getElementById("modalRefundId").value;
+        document.getElementById("rejectReasonDiv").style.display = 'none';
+        document.getElementById("modalFooter").innerHTML = `
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+        <button type="button" class="btn btn-danger"
+            onclick="toggleRejectInput()">거절</button>
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+            onclick="approveRefund(${id})">환불 승인</button>
+        `;
+    }
+
+    // 거절 : 사유 작성 칸을 보여주고 취소/거절 확정 버튼 보여줌
+    function toggleRejectInput() {
+        const id = document.getElementById("modalRefundId").value;
+        document.getElementById("rejectReasonDiv").style.display = 'block';
+        document.getElementById("modalFooter").innerHTML = `
+        <button type="button" class="btn btn-secondary" onclick="hideRejectInput()">취소</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
+        onclick="rejectRefund(${id})">거절 확정</button>`;
+    }
+
+    // 비동기 통신 - 거절 확정 로직 : form을 만들어 post 전송
+    function rejectRefund(id) {
+        const rejectReason = document.getElementById("rejectReasonInput").value.trim();
+        if (!rejectReason) {
+            alert("환불 거절 사유를 입력해주세요.");
+            return;
+        }
+        if (!confirm("환불 요청을 거절하시겠습니까?")) {
+            return;
+        }
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = `/admin/refund/${id}/reject`;
+        const input = document.createElement("input");
+        input.name = "rejectReason";
+        input.value = rejectReason;
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    // 환불 승인
+    function approveRefund(id) {
+        if (!confirm("환불 승인을 하시겠습니까?\n(포트원 결제가 즉시 취소됩니다.)")) {
+            return;
+        }
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = `/admin/refund/${id}/approve`;
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    // 금액 천 단위 , 표시
+    document.querySelectorAll(".amount").forEach((element) => {
+        element.textContent = element.textContent.replace(
+                /\B(?=(\d{3})+(?!\d))/g,
+                ","
+        );
+    });
+</script>
+
+{{> layout/footer}}

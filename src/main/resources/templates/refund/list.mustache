@@ -13,7 +13,8 @@
                         <h5 class="card-title mb-2">환불 요청 #{{id}}</h5>
                         <p class="text-muted mb-2"><i class="fa-solid fa-receipt"></i> 결제 번호 : {{paymentId}}</p>
                         <p class="text-muted mb-2">
-                            <i class="fa-solid fa-won-sign"></i> 환불 금액 :<span class="fw-bold text-danger">{{amount}} P</span>
+                            <i class="fa-solid fa-won-sign"></i> 환불 금액 : <span
+                                class="fw-bold text-danger amount">{{amount}} 원</span>
                         </p>
                         <p class="text-muted mb-2"><i class="fa-solid fa-comment"></i> 환불 사유 : {{reason}}</p>
                         <p class="text-muted mb-2"><i class="fa-solid fa-calendar"></i> 요청일 : {{requestedAt}}</p>
@@ -21,11 +22,12 @@
                             <i class="fa-solid fa-circle-info"></i> 상태 :
                             {{#pending}}<span class="badge bg-warning text-dark">{{statusDisplay}}</span>{{/pending}}
                             {{#approved}}<span class="badge bg-success">{{statusDisplay}}</span>{{/approved}}
-                            {{#rejected}}<span class="badge bg-secondary">{{statusDisplay}}</span>{{/rejected}}
+                            {{#rejected}}<span class="badge bg-danger">{{statusDisplay}}</span>{{/rejected}}
                         </p>
                         {{#rejected}}
                             <p class="text-muted mb-0">
-                                <i class="fa-solid fa-circle-xmark"></i> 거절 사유 :<span class="text-danger">{{rejectReason}}</span>
+                                <i class="fa-solid fa-circle-xmark"></i> 거절 사유 : <span
+                                    class="text-danger">{{rejectReason}}</span>
                             </p>
                         {{/rejected}}
                     </div>
@@ -49,4 +51,12 @@
     </div>
 </div>
 
+<script>
+    document.querySelectorAll(".amount").forEach((element) => {
+        element.textContent = element.textContent.replace(
+                /\B(?=(\d{3})+(?!\d))/g,
+                ","
+        );
+    });
+</script>
 {{> layout/footer}}

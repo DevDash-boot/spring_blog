@@ -19,7 +19,7 @@
                                 </p>
                             </div>
                             <div class="text-end">
-                                <span class="badge bg-primary fs-6">-{{price}} P</span>
+                                <span class="badge bg-primary fs-6 price">-{{price}} 원</span>
                             </div>
                         </div>
                     </div>
@@ -40,5 +40,14 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.querySelectorAll(".price").forEach((element) => {
+        element.textContent = element.textContent.replace(
+                /\B(?=(\d{3})+(?!\d))/g,
+                ","
+        );
+    });
+</script>
 
 {{> layout/footer}}
