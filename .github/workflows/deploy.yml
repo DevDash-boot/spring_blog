@@ -1,0 +1,47 @@
+name: deploy
+on:
+  push:
+    branches: [main]  # ① push를 지켜볼 브랜치
+env:
+  ECR_REGISTRY: 542795122350.dkr.ecr.ap-southeast-2.amazonaws.com  # ② 계정 ID, 리전
+  IMAGE_NAME: spring-server  # ③ ECR 저장소 이름
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 받기
+        uses: actions/checkout@v6
+      - name: AWS 로그인
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}  # ④ Secret Name
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # ④
+          aws-region: ap-southeast-2  # ⑤ ECR 리전
+      - name: ECR 로그인
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: 이미지 만들고 올리기  # 아래 두 줄은 고정, 값은 자동으로 채워짐
+        run: |
+          docker build -t $ECR_REGISTRY/$IMAGE_NAME:${{ github.sha }} .
+          docker push $ECR_REGISTRY/$IMAGE_NAME:${{ github.sha }}
+      # EC2에 SSH로 접속해서 새 이미지로 바꾸기
+      - name: EC2에 배포
+        uses: appleboy/ssh-action@v1  # SSH 접속 도구
+        with:
+          host: ${{ secrets.EC2_HOST }}  # ① EC2의 탄력적 IP
+          username: ubuntu  # ② EC2 접속 사용자
+          key: ${{ secrets.EC2_SSH_KEY }}  # ① .pem 내용
+          script: |
+            # 중간 명령이 하나라도 실패하면 바로 멈추고 단계를 실패로 표시
+            set -e
+            cd ~/app  # ③ compose.yaml과 .env가 있는 폴더
+            # ④ .env의 APP_TAG 줄 값을 이번 커밋 번호로 바꿈
+            sed -i "s/^APP_TAG=.*/APP_TAG=${{ github.sha }}/" .env
+            # ⑤ 리전 ⑥ ECR 주소. EC2의 IAM 역할로 로그인 (키 필요 없음)
+            aws ecr get-login-password --region ap-southeast-2 \
+              | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+            # ⑦ EC2가 ECR에서 my-server의 이미지(spring-server:커밋 번호)를 받음
+            docker compose pull my-server
+            # EC2가 받은 이미지로 my-server 컨테이너만 다시 만듦
+            docker compose up -d
+            # 3일 지난 안 쓰는 이미지 정리 (디스크 확보)
+            docker image prune -af --filter "until=72h"
